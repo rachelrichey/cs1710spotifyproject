@@ -1,0 +1,7 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    { "label": "Start dev server", "type": "npm", "script": "dev", "isBackground": true, "problemMatcher": [] },
+    { "label": "Rebuild data (Python)", "type": "npm", "script": "data", "problemMatcher": [] }
+  ]
+}

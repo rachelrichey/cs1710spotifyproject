@@ -1,0 +1,7 @@
+{
+  "editor.formatOnSave": true,
+  "editor.tabSize": 2,
+  "files.eol": "\n",
+  "[python]": { "editor.tabSize": 4 },
+  "search.exclude": { "**/node_modules": true, "dist": true, "public/data": true }
+}

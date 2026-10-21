@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.DS_Store
+*.log
+__pycache__/
+.venv/
+# Intermediate pipeline output (rebuild with `npm run data`)
+data/processed/
+# The raw CSV is ~50 MB. Keep it out of git history; share it via the team drive
+# or Git LFS, and drop it at data/raw/spotify_tracks_with_dates_gender.csv
+data/raw/*.csv
