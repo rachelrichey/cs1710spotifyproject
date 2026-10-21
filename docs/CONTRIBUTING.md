@@ -1,5 +1,15 @@
 # Contributing
 
+## Start here
+
+1. Ask Rachel to add you as a collaborator. You'll get an email invite to accept.
+2. `git clone https://github.com/rachelrichey/cs1710spotifyproject.git && cd cs1710spotifyproject && npm install`
+3. `npm run dev` and open http://localhost:5173.
+
+**Using Claude Code:** run `claude` in the project folder. It reads `CLAUDE.md` automatically, so it already knows the commands and design rules. Ask for things like "add a chart to chapter 4 showing X" or "why is npm test failing". Ask it to work on a new branch and open a PR.
+
+**Deploying:** merge to `main` and it deploys itself (`.github/workflows/deploy.yml` runs tests, builds, publishes). Live at https://rachelrichey.github.io/cs1710spotifyproject/. If the site doesn't update, check the Actions tab.
+
 ## Workflow
 
 1. `git checkout -b yourname/short-description`
