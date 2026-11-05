@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Milestone 8 Draft</title>
+<style>
+  body { background: #fff; color: #111; font: 11pt/1.5 Arial, sans-serif; max-width: 820px; margin: 32px auto; padding: 0 16px; }
+  h1 { font-size: 20pt; margin: 0 0 4px; }
+  h2 { font-size: 14pt; margin: 28px 0 6px; }
+  h3 { font-size: 12pt; margin: 18px 0 4px; }
+  table { border-collapse: collapse; width: 100%; margin: 8px 0 12px; font-size: 10pt; }
+  th, td { border: 1px solid #999; padding: 4px 6px; text-align: left; vertical-align: top; }
+  th { background: #eee; }
+  .todo { background: #fff3c4; padding: 2px 4px; }
+  .helper { background: #f2f2f2; border: 1px solid #ccc; padding: 12px 16px; margin-bottom: 32px; font-size: 10pt; }
+  .helper h2 { margin-top: 0; font-size: 12pt; }
+  .cut { border-top: 2px dashed #999; margin: 24px 0; text-align: center; color: #777; font-size: 9pt; }
+</style>
+</head>
+<body>
+
+<div class="helper">
+  <h2>How to use this (don't paste this grey box)</h2>
+  <ol>
+    <li>Select everything below the dashed line, copy, and paste it into the Google Doc after page 64 (replace the bare requirements list).</li>
+    <li>Fill in the <span class="todo">yellow</span> spots: confirm the team list, insert screenshots from <code>Desktop/cs1710spotifyproject/docs/screenshots/</code>, insert the three draft sketches, and add the live site link if you deploy it.</li>
+    <li>Then fix the earlier pages:
+      <ul>
+        <li>p. 61 and p. 63: "84% of the 83 genres" &rarr; "85% (71 of 84) of genres with at least 30 songs in both periods"</li>
+        <li>p. 63: "rising from 18% in the 1960s to 45% in the 2010s and 2015," &rarr; "rising from 18% in the 1960s to 45% in the 2010s,"</li>
+        <li>p. 63: "music in 2010 is sadder than 2000" &rarr; "music since 2010 is sadder than music before 2000"</li>
+        <li>p. 9: delete the blank page</li>
+        <li>Add headings: "Milestone 6" before p. 49, "Milestone 7" before p. 53 (individual insights) and before the storyboard on p. 62. Check the numbering against the course site.</li>
+        <li>p. 60: ask Rachel to make insight 3's title and last sentence agree ("then partially reversed" vs. "doesn't really reveal it reversed")</li>
+      </ul>
+    </li>
+  </ol>
+</div>
+
+<div class="cut">&#9986; copy from here &#9986;</div>
+
+<h1>Milestone 8: Prototype V1</h1>
+<p><b>Sadder, Not Slower</b>: an interactive, scroll-driven data story about how the mood of popular music changed since the 1960s.</p>
+<p>Live site: <span class="todo">[add link once deployed]</span> &nbsp;|&nbsp; Code: https://github.com/rachelrichey/cs1710spotifyproject</p>
+
+<h2>1. Team members who worked on this prototype</h2>
+<p><span class="todo">[Confirm everyone below actively worked on V1]</span><br>
+Bahar Moradi, Cate Buchan, Rachel Richey, Miles Schwab</p>
+
+<h2>2. What Prototype V1 contains</h2>
+<p>A scroll-driven website (React + Vite + D3) that follows our storyboard frame by frame. All 10 chapters load real data from JSON files that our Python pipeline builds from our 114,000-track dataset. Every number in the story text is computed from the data rather than typed in.</p>
+<table>
+  <tr><th>#</th><th>Chapter</th><th>Storyboard frame</th><th>Visualization</th><th>Sketch</th><th>Status</th></tr>
+  <tr><td>1</td><td>Two hits, fifty years apart</td><td>Hook</td><td>Two Spotify-style song cards + headline statistic</td><td>Storyboard</td><td>Implemented</td></tr>
+  <tr><td>2</td><td>How do you measure a song's mood?</td><td>Background and problem</td><td>Mood map: 114 genres on valence &times; energy</td><td>Sketch 10</td><td>Implemented (<b>functional D3 #1</b>)</td></tr>
+  <tr><td>3</td><td>Hits got sadder, decade by decade</td><td>Rising insight 1</td><td>Line chart: share of hits that sound sad, by decade</td><td>Storyboard</td><td>Implemented (<b>functional D3 #2</b>)</td></tr>
+  <tr><td>4</td><td>It's not just which genres got popular</td><td>Rising insight 2</td><td>Dumbbell chart: each genre's valence before 2000 vs. since 2010</td><td>Storyboard</td><td>Implemented</td></tr>
+  <tr><td>5</td><td>The happy corner is emptying out</td><td>Rising insight 3</td><td>Animated mood map with a release-year slider</td><td>Sketch 10 + Milestone 6</td><td>Implemented</td></tr>
+  <tr><td>6</td><td>Today's hit is a sad song you can dance to</td><td>Main message</td><td>Radar: average 1960s hit vs. average 2020&ndash;22 hit</td><td>Sketch 7</td><td>Implemented</td></tr>
+  <tr><td>7</td><td>What this means for listeners and artists</td><td>Recommendations</td><td>Three takeaway cards</td><td>Storyboard</td><td>Implemented</td></tr>
+  <tr><td>8</td><td>Where does your music land?</td><td>Call to action</td><td>Song search + playlist mood map</td><td>Storyboard</td><td>Implemented</td></tr>
+  <tr><td>9</td><td>What does each genre sound like?</td><td>Novel view</td><td>Genre bursts</td><td>Sketch 11</td><td>First version implemented</td></tr>
+  <tr><td>10</td><td>Behind the data</td><td>Method</td><td>Definitions, sources, known problems</td><td>&ndash;</td><td>Implemented</td></tr>
+</table>
+<p>Sketch 8 (happiest-genres bar chart), sketch 3 (flower) and sketch 18 (speaker) are not built as standalone charts in V1. The tooltips and highlighted extremes on the chapter 2 mood map cover most of sketch 8's purpose.</p>
+<p><span class="todo">[Insert screenshots: 01-hero, 03-mood-map, 04-sadder-hits, 07-radar, 10-genre-bursts]</span></p>
+
+<h2>3. Data pipeline</h2>
+<p>Our raw data is the Kaggle Spotify Tracks dataset (114,000 tracks, 114 genres) that our team extended with a release date for each track (from Wikipedia, MusicBrainz and Deezer) and an artist gender label (mostly from Wikidata).</p>
+<ol>
+  <li><b>Clean</b> (<code>pipeline/clean_data.py</code>): release dates come in four formats, and two-digit years are ambiguous ("/69" could be 1969 or 2069). We resolve the century by matching the date to the sources cited in the notes column, and fall back to a pivot only when there is no match (2,827 tracks). Dates outside 1950&ndash;2022 are flagged, multi-artist gender strings become explicit flags, and duration is converted to seconds.</li>
+  <li><b>Aggregate</b> (<code>pipeline/build_story_data.py</code>): builds 11 small JSON files, one per chart. Our definitions are set once at the top of this file: a <b>hit</b> is popularity &ge; 60, a <b>sad</b> song has valence &lt; 0.40, and time-based charts use 1960&ndash;2022.</li>
+  <li><b>Load</b>: the website fetches only these JSON files and never the raw CSV.</li>
+</ol>
+<p>After cleaning: 89,740 unique tracks, 76,275 with a release year in 1960&ndash;2022, and 9,263 hits. Automated tests rerun the headline numbers so the site and this process book cannot drift apart.</p>
+<p><b>Change from Milestone 7:</b> the genre comparison now counts 84 genres with at least 30 songs in both periods (before 2000 and since 2010), and <b>71 of them (85%) got sadder</b>. Our earlier draft said 84% of 83 genres; the final pipeline's numbers are the ones used throughout the site.</p>
+
+<h2>4. Website structure and storytelling</h2>
+<p>The site follows Brent Dykes's data storytelling arc from our storyboard:</p>
+<ul>
+  <li><b>Setting</b> (chapters 1&ndash;2): two songs fifty years apart hook the reader, and the mood map teaches our two axes, valence (sad to happy) and energy (calm to intense).</li>
+  <li><b>Rising insights</b> (3&ndash;5): hits got sadder by decade; this holds within genres; the happy-and-energetic corner of the mood map empties out over time.</li>
+  <li><b>Main message</b> (6): the radar shows today's hit is sadder but more danceable and more energetic than a 1960s hit: "a sad song you can dance to."</li>
+  <li><b>Solution and next steps</b> (7&ndash;8): takeaways, then readers search their own songs and see which decade they sound like.</li>
+</ul>
+<p>Two chapters sit after the arc: the novel view (9) and documentation of the data (10).</p>
+<p><b>Design:</b> a dark, Spotify-inspired theme. A fixed "now playing" bar at the bottom uses scroll position as the playhead, with the chapter title, progress, previous/next buttons and an auto-scroll play button. In chapters 2, 3, 5 and 6 the chart stays pinned while text cards scroll past, and each card changes what the chart shows. On phones the chart pins to the top and the cards scroll underneath.</p>
+
+<h2>5. Interaction designs (as implemented)</h2>
+<table>
+  <tr><th>Ch.</th><th>Interaction</th><th>Intent (Yi et al.)</th><th>What the reader finds out</th></tr>
+  <tr><td>1</td><td>Press play on a song card: an equalizer bounces at that song's tempo</td><td>Encode</td><td>A "sad" song can still be fast</td></tr>
+  <tr><td>2</td><td>Scroll steps reveal axes, dots and extremes; hover a dot</td><td>Explore, Elaborate</td><td>Where each genre sits and which genres are opposites</td></tr>
+  <tr><td>3</td><td>Scrolling draws the line; hover or tap a decade</td><td>Explore, Elaborate</td><td>Which real songs sit behind each point</td></tr>
+  <tr><td>4</td><td>Mode chips (biggest drops, got happier, all); search for a genre</td><td>Filter, Select</td><td>Whether the shift comes from just a few genres (it doesn't)</td></tr>
+  <tr><td>5</td><td>Year slider with play button; hover a dot</td><td>Explore, Filter</td><td>The happy corner falls from 58% of hits (around 1985) to 31% (around 2016)</td></tr>
+  <tr><td>6</td><td>Toggle decade chips; hover an axis</td><td>Select, Reconfigure</td><td>Compare any decades on a true 0&ndash;1 scale</td></tr>
+  <tr><td>8</td><td>Search about 47,000 songs, build a playlist, "find a happy hit"</td><td>Select, Connect</td><td>Which decade your taste sounds like</td></tr>
+  <tr><td>9</td><td>Click a burst or pick from 114 genres; jump to the nearest genre</td><td>Select, Connect</td><td>What a genre sounds like and which genre it resembles</td></tr>
+</table>
+<p><b>Changes based on Milestone 6 feedback:</b> the radar now uses a true 0&ndash;1 scale (the lowest-to-highest scale exaggerated small differences) and shows values on hover; the mood map keeps its quadrant labels because its axes are fixed; the release-year filter we planned became the chapter 5 slider.</p>
+
+<h2>6. Novel view: genre bursts (sketch 11)</h2>
+<p>One glyph per genre, built from 28 sampled tracks of that genre. Because every burst uses the same encoding, the glyphs work as small multiples that can be compared side by side.</p>
+<table>
+  <tr><th>Mark</th><th>Channel</th><th>Data</th><th>Type</th></tr>
+  <tr><td>Ray (line), one per track</td><td>Length</td><td>Energy</td><td>Quantitative</td></tr>
+  <tr><td>Ray</td><td>Angle within the fan</td><td>Tempo (60&ndash;200 BPM, slow on the left, fast on the right)</td><td>Quantitative</td></tr>
+  <tr><td>Dot at ray tip</td><td>Hue (5 bins, blue to gold)</td><td>Valence</td><td>Ordinal</td></tr>
+  <tr><td>Dot at ray tip</td><td>Area</td><td>Popularity</td><td>Quantitative</td></tr>
+  <tr><td>Wavy roots below</td><td>Count and length</td><td>Acousticness</td><td>Quantitative</td></tr>
+  <tr><td>Wavy rings</td><td>Count</td><td>Danceability</td><td>Quantitative</td></tr>
+  <tr><td>Dashed wave between two bursts</td><td>Connection</td><td>Nearest genre (by danceability, energy, valence, acousticness)</td><td>Categorical</td></tr>
+  <tr><td>Gallery position</td><td>Vertical order</td><td>Calmer genres first, louder genres last</td><td>Ordinal</td></tr>
+</table>
+<p><b>Why it is novel:</b> no standard chart shows seven attributes of a genre in one compact, repeatable shape. In V1, techno reads at a glance as a narrow, blue, tightly packed fan, while salsa is wide and gold.</p>
+<p><b>What we will test next:</b> whether readers understand the roots and ripples as data rather than decoration; how to compare more than a handful of the 114 genres at once; and linking the bursts to the mood map and year slider.</p>
+<p><span class="todo">[Insert screenshot: 10-genre-bursts]</span></p>
+
+<h2>7. Visualization drafts not implemented yet</h2>
+<p>These come from the streaming-era and gender insights we kept as optional views in Milestone 7. The data for all three is already computed by our pipeline.</p>
+
+<h3>Draft A: The Friday switch</h3>
+<p><span class="todo">[Insert sketch]</span></p>
+<p><b>Question:</b> When did music move to Friday releases?<br>
+<b>Marks:</b> one bar per year, 1995&ndash;2022.<br>
+<b>Channels:</b> bar height = share of that year's releases that came out on a Friday (7% in 1995, 22% in 2014, 40% in 2015, 61% in 2016); hue highlights the years from 2015 on.<br>
+<b>Annotation:</b> "Global Friday release day, July 10, 2015."<br>
+<b>Interaction:</b> hover a year to see its full weekday breakdown.<br>
+<b>Role in the story:</b> gives the 2015 "streaming era" marker on our timeline a concrete cause.</p>
+
+<h3>Draft B: Shorter hits, more collaborations</h3>
+<p><span class="todo">[Insert sketch]</span></p>
+<p><b>Question:</b> How did streaming change the shape of a hit?<br>
+<b>Marks:</b> two small-multiple line charts sharing a decade x-axis.<br>
+<b>Channels:</b> vertical position = median hit length (4:16 in the 1990s to 3:07 in 2020&ndash;22) in one panel, and share of hits crediting more than one artist (12% in the 1990s to 37% in 2020&ndash;22) in the other.<br>
+<b>Interaction:</b> hovering a decade highlights it in both panels and lists example songs.<br>
+<b>Role in the story:</b> shows what else changed about hits after 2015.</p>
+
+<h3>Draft C: Women's share of hits</h3>
+<p><span class="todo">[Insert sketch]</span></p>
+<p><b>Question:</b> Are women more represented among hits than among all songs?<br>
+<b>Marks:</b> one dumbbell per decade.<br>
+<b>Channels:</b> horizontal position = share of tracks with a woman credited; hue = all songs vs. hits (1960s: 12% of all songs vs. 7% of hits; 2010s: 17% vs. 24%).<br>
+<b>Interaction:</b> toggle between female solo, mixed and group credits.<br>
+<b>Role in the story:</b> optional extra view. Gender labels are missing for some artists, so the chart needs a visible data-quality note.</p>
+
+<h2>8. How we used Claude</h2>
+<p>We used Claude to write the first version of the website code from our storyboard and process book, to build the data pipeline, and to test the site (automated data checks and screenshots on desktop and phone). Claude's first pass had problems that were then fixed: charts disappearing when pinned, dumbbell rows stacked on top of each other, dots misaligned with the axes, overlapping labels on clustered genres, horizontal scrolling on phones, and one wrong sentence (it said 40% of 1990s hits sounded sad; the data says 37%).</p>
+<p>What our team decided and owns: the story and its interpretation, the hit threshold of 60, the definition of a sad song, which sketches to build, and the visual design. <span class="todo">[Add the specific changes your team made, e.g. wording, chart choices, chapter labels.]</span></p>
+
+</body>
+</html>
