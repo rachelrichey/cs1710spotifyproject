@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useCountUp, useInView } from '../lib/hooks.js';
 import { moodColor, pct } from '../lib/format.js';
+import { loadSpotifyApi, searchUrl, trackUrl } from '../lib/spotify.js';
 
 /** Thin horizontal meter (value 0..1) that fills once the card is in view. */
 function Meter({ label, value, color, on }) {
@@ -17,11 +18,55 @@ function Meter({ label, value, color, on }) {
   );
 }
 
-/** One Spotify-style track card. "Play" animates an equalizer whose speed follows the song's tempo. */
-function TrackCard({ song, role, on }) {
-  const [playing, setPlaying] = useState(false);
+/**
+ * Spotify's embed player for one track. The API replaces the element it is given
+ * with an iframe, so we hand it a child we create ourselves (React never touches it).
+ * Starts playing as soon as it is ready and reports pause / end back to the card.
+ */
+function SpotifyEmbed({ id, onPaused }) {
+  const host = useRef(null);
+  const [failed, setFailed] = useState(false);
+  useEffect(() => {
+    let ctrl = null;
+    let alive = true;
+    const el = document.createElement('div');
+    host.current?.appendChild(el);
+    loadSpotifyApi().then(
+      (api) => {
+        if (!alive) return;
+        api.createController(el, { uri: `spotify:track:${id}`, width: '100%', height: 80 }, (c) => {
+          ctrl = c;
+          if (!alive) { c.destroy(); return; }
+          c.addListener('ready', () => c.play());
+          c.addListener('playback_update', (e) => {
+            const d = e?.data;
+            if (d && d.isPaused && d.position > 0 && d.position >= d.duration - 500) onPaused();
+          });
+        });
+      },
+      () => alive && setFailed(true),
+    );
+    return () => {
+      alive = false;
+      if (ctrl) ctrl.destroy();
+      el.remove();
+    };
+  }, [id, onPaused]);
+  if (failed) {
+    return <a className="track__listen" href={trackUrl(id)} target="_blank" rel="noreferrer">Player blocked here. Open on Spotify &#8599;</a>;
+  }
+  return <div className="track__embed" ref={host} />;
+}
+
+/**
+ * One Spotify-style track card. "Play" plays the real song through Spotify's
+ * embed (a 30-second preview if you are not logged in to Spotify) while the
+ * equalizer bounces at the song's tempo. Only one card plays at a time.
+ */
+function TrackCard({ song, role, on, playing, onToggle, onStop }) {
   const mood = moodColor(song.valence);
   const dur = Math.max(0.3, 120 / song.tempo);
+  const playable = Boolean(song.trackId);
   return (
     <article className={`track ${playing ? 'is-playing' : ''}`} style={{ '--mood': mood }}>
       <div className="track__cover">
@@ -32,8 +77,8 @@ function TrackCard({ song, role, on }) {
             <i key={i} style={{ animationDelay: `${i * -0.19}s` }} />
           ))}
         </div>
-        <button className="track__play" onClick={() => setPlaying((p) => !p)} aria-pressed={playing}
-          aria-label={`${playing ? 'Pause' : 'Preview'} the mood of ${song.name}`}>
+        <button className="track__play" onClick={onToggle} aria-pressed={playing}
+          aria-label={`${playing ? 'Stop' : 'Play'} ${song.name}`}>
           {playing ? (
             <svg viewBox="0 0 16 16"><path d="M2.7 1a.7.7 0 0 0-.7.7v12.6a.7.7 0 0 0 .7.7h2.6a.7.7 0 0 0 .7-.7V1.7a.7.7 0 0 0-.7-.7H2.7zm8 0a.7.7 0 0 0-.7.7v12.6a.7.7 0 0 0 .7.7h2.6a.7.7 0 0 0 .7-.7V1.7a.7.7 0 0 0-.7-.7h-2.6z" /></svg>
           ) : (
@@ -45,7 +90,15 @@ function TrackCard({ song, role, on }) {
       <p className="track__artist">{song.artist}</p>
       <Meter label="Happiness (valence)" value={song.valence} color={mood} on={on} />
       <Meter label="Danceability" value={song.danceability} color="var(--green)" on={on} />
-      <p className="track__hint">{playing ? `Bars bounce at ${Math.round(song.tempo)} BPM` : 'Press play to feel the tempo'}</p>
+      {playing && playable && <SpotifyEmbed id={song.trackId} onPaused={onStop} />}
+      {playing && !playable && (
+        <a className="track__listen" href={searchUrl(song)} target="_blank" rel="noreferrer">Listen on Spotify &#8599;</a>
+      )}
+      <p className="track__hint">
+        {playing
+          ? `Bars bounce at ${Math.round(song.tempo)} BPM. Press the other card to compare.`
+          : 'Press play to hear it'}
+      </p>
     </article>
   );
 }
@@ -55,13 +108,16 @@ export default function SongCards({ hook }) {
   const [ref, inView] = useInView({ threshold: 0.3 });
   const a = useCountUp((hook?.sad1960s ?? 0.18) * 100, inView, 1400);
   const b = useCountUp((hook?.sad2010s ?? 0.45) * 100, inView, 1700);
+  const [playing, setPlaying] = useState(null); // 'then' | 'now' | null
+  const toggle = (k) => setPlaying((p) => (p === k ? null : k));
+  const stop = useCallback(() => setPlaying(null), []);
   if (!hook) return <div className="chart-loading">Loading songs&hellip;</div>;
   return (
     <div ref={ref}>
       <div className="duel">
-        <TrackCard song={hook.then} role="Then" on={inView} />
+        <TrackCard song={hook.then} role="Then" on={inView} playing={playing === 'then'} onToggle={() => toggle('then')} onStop={stop} />
         <div className="duel__vs" aria-hidden="true">vs</div>
-        <TrackCard song={hook.now} role="Now" on={inView} />
+        <TrackCard song={hook.now} role="Now" on={inView} playing={playing === 'now'} onToggle={() => toggle('now')} onStop={stop} />
       </div>
       <div className="statband">
         <div className="statband__item">

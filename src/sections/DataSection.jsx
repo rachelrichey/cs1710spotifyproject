@@ -42,7 +42,9 @@ export default function DataSection({ meta }) {
           <h3>Definitions we use everywhere</h3>
           <dl className="defs">
             <div><dt>Hit</dt><dd>Spotify popularity score of {meta?.hitThreshold ?? 60} or higher ({meta ? fmt(meta.hits) : '9,263'} tracks, 1960&ndash;2022)</dd></div>
-            <div><dt>Sounds sad</dt><dd>Valence below {meta?.sadThreshold ?? 0.4}. Valence is Spotify&rsquo;s 0&ndash;1 &ldquo;musical positivity&rdquo; score.</dd></div>
+            <div><dt>Sounds sad</dt><dd>Valence below {meta?.sadThreshold ?? 0.4}. Valence is Spotify&rsquo;s 0&ndash;1 &ldquo;musical positivity&rdquo; score, estimated from the audio (key, harmony, brightness), not the lyrics.</dd></div>
+            <div><dt>Energy</dt><dd>Spotify&rsquo;s 0&ndash;1 intensity score, built from loudness, dynamic range, timbre and how busy the sound is.</dd></div>
+            <div><dt>Danceability</dt><dd>Spotify&rsquo;s 0&ndash;1 score for how well a track suits dancing, built from tempo, rhythm stability and beat strength.</dd></div>
             <div><dt>Decade</dt><dd>By release year. The last bucket is 2020&ndash;22 because the data ends in 2022.</dd></div>
             <div><dt>Streaming era</dt><dd>2015 onward. Our weekday data shows releases jump from about 20% to 60% on Fridays in 2015&ndash;16.</dd></div>
           </dl>

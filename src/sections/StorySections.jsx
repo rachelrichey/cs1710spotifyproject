@@ -5,6 +5,7 @@ import { CHAPTERS } from '../chapters.js';
 import { pct, prettyGenre, signed2 } from '../lib/format.js';
 import SongCards from '../charts/SongCards.jsx';
 import MoodMap, { moodExtremes } from '../charts/MoodMap.jsx';
+import MeasureKey from '../charts/MeasureKey.jsx';
 import SadShareLine from '../charts/SadShareLine.jsx';
 import GenreDumbbell from '../charts/GenreDumbbell.jsx';
 import MoodTimeMap, { buildFrames } from '../charts/MoodTimeMap.jsx';
@@ -30,8 +31,9 @@ export function HookChapter({ hook }) {
       {hook && (
         <Reveal>
           <p className="chapter__dek" style={{ marginTop: 40 }}>
-            The newer song is the sadder one, and it is far more danceable ({hook.now.danceability.toFixed(2)} vs. {hook.then.danceability.toFixed(2)}).
-            In the 1960s, fewer than 1 in 5 popular songs sounded sad. Now it&rsquo;s almost half. <b style={{ color: '#fff' }}>Is that a coincidence, or a pattern?</b>
+            The newer song is the sadder one, and it is also more danceable ({hook.now.danceability.toFixed(2)} vs. {hook.then.danceability.toFixed(2)}).
+            That could just be two songs. But in the 1960s, fewer than 1 in 5 hits sounded sad ({pct(hook.sad1960s)}), and by the 2010s it was close to half ({pct(hook.sad2010s)}).{' '}
+            <b style={{ color: '#fff' }}>Is that a coincidence, or a pattern?</b>
           </p>
         </Reveal>
       )}
@@ -40,12 +42,12 @@ export function HookChapter({ hook }) {
 }
 
 /* ------------------------------------------------------------------ 2 */
-export function MoodMapChapter({ genres, profile }) {
+export function MoodMapChapter({ genres, profile, hook }) {
   const ex = useMemo(() => moodExtremes(genres), [genres]);
   const steps = [
     <>
       <h3>Meet the mood map</h3>
-      <p>We describe how a song feels with two numbers Spotify measures for every track.</p>
+      <p>The map uses two of the scores defined above.</p>
       <p><strong>Valence</strong> runs from sad (0) to happy (1). <strong>Energy</strong> runs from calm (0) to intense (1). Together they split music into four moods.</p>
     </>,
     <>
@@ -67,6 +69,7 @@ export function MoodMapChapter({ genres, profile }) {
   ];
   return (
     <Chapter chapter={chapter('mood-map')} tint="c" dek="Before we can say music got sadder, we need a way to measure a song&rsquo;s mood.">
+      <Reveal><MeasureKey hook={hook} /></Reveal>
       <Scrolly steps={steps} side="right">{(step) => <MoodMap genres={genres} profile={profile} step={step} />}</Scrolly>
     </Chapter>
   );
@@ -252,9 +255,9 @@ export function BurstChapter({ bursts }) {
   const ch = chapter('bursts');
   return (
     <Chapter chapter={{ ...ch, title: ch.title }} tint="a"
-      dek="Every genre has a shape. We drew one burst per genre from 28 of its tracks, so you can compare sounds at a glance.">
+      dek="Every genre has a shape. We drew one burst per genre from 28 of its tracks. Start with the key below, then compare genres.">
       <Reveal><GenreBurst bursts={bursts} /></Reveal>
-      <p className="caveat"><b>Novel view, V1.</b> This is our first implementation of sketch 11. Next: linking bursts to the mood map and the year slider.</p>
+      <p className="caveat"><b>Novel view, V2.</b> Our implementation of sketch 11. After user testing we added the step-by-step key above, because seven encodings at once were hard to read at first glance.</p>
     </Chapter>
   );
 }
