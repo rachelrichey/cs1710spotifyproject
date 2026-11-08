@@ -93,7 +93,9 @@ def main():
     cc = tracks[(tracks.track_name == "Bad Moon Rising") & (tracks.artists == "Creedence Clearwater Revival")].iloc[0]
     un = tracks[tracks.track_name.str.startswith("Unholy")].sort_values("popularity", ascending=False).iloc[0]
     def card(t):
+        # trackId lets the site embed Spotify's player so the two hook songs are playable
         return {"name": t.track_name, "artist": t.artists.replace(";", ", "), "year": int(t.year),
+                "trackId": t.track_id,
                 "valence": r(t.valence, 2), "danceability": r(t.danceability, 2), "energy": r(t.energy, 2),
                 "tempo": r(t.tempo, 0), "popularity": int(t.popularity), "genre": t.track_genre}
     first, last = hits[hits.decade == "1960s"], hits[hits.decade == "2010s"]

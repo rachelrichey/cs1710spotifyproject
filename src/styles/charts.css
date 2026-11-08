@@ -222,3 +222,46 @@
 .defs dd { margin: 2px 0 0; color: var(--text-2); }
 .caveats { margin: 0; padding-left: 18px; color: var(--text-2); font-size: 15px; display: grid; gap: 8px; }
 .caveats b { color: #fff; }
+
+/* ---------- chapter 1: real playback (Milestone 10) ---------- */
+.track__embed { margin-top: 14px; min-height: 80px; border-radius: 12px; overflow: hidden; background: #111; }
+.track__embed iframe { display: block; border: 0; border-radius: 12px; }
+.track__listen { display: inline-block; margin-top: 14px; font-weight: 700; font-size: 14px; color: var(--green); }
+
+/* ---------- chapter 2: how a song gets its scores (Milestone 10) ---------- */
+.mkey { margin-bottom: clamp(28px, 5vw, 56px); }
+.mkey h3 { font-size: 22px; margin-bottom: 6px; }
+.mkey__lead { color: var(--text-2); margin: 0 0 18px; max-width: 70ch; }
+.mkey__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 18px 28px; }
+.mkey__item h4 { font-size: 17px; margin: 0 0 4px; }
+.mkey__item p { margin: 0; font-size: 14px; color: var(--text-2); }
+.mkey__item p b { color: #fff; font-weight: 700; }
+.mkey__scale { margin-top: 34px; }
+.mkey__track { position: relative; height: 6px; border-radius: 99px; background: #3a3a3a; }
+.mkey__pin { position: absolute; top: 50%; transform: translate(-50%, -50%); }
+.mkey__pin i { display: block; width: 14px; height: 14px; border-radius: 50%; background: var(--c); border: 2px solid #121212; }
+.mkey__pin em { position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%); white-space: nowrap; font-style: normal; font-size: 11px; font-weight: 600; color: var(--text-2); }
+.mkey__pin.is-low em { bottom: auto; top: 18px; }
+.mkey__pin em b { color: #fff; }
+.mkey__ends { display: flex; justify-content: space-between; margin-top: 30px; font-size: 11px; color: var(--text-3); font-weight: 600; }
+
+/* ---------- chapter 9: how to read a burst (Milestone 10) ---------- */
+.burst .is-dim, .burst .burst__ray.is-dim > * { opacity: .1; transition: opacity .35s; }
+.burst__stem, .burst__tip, .burst__roots, .burst__ripples { transition: opacity .35s; }
+.bkey { overflow: hidden; display: grid; grid-template-columns: minmax(220px, 340px) minmax(0, 1fr); gap: clamp(18px, 3vw, 40px); align-items: center; margin-bottom: clamp(28px, 4vw, 48px); }
+@media (max-width: 760px) { .bkey { grid-template-columns: minmax(0, 1fr); } .bkey__glyph { max-width: 300px; margin: 0 auto; width: 100%; } }
+.bkey h3 { font-size: 22px; margin-bottom: 4px; }
+.bkey__sub { color: var(--text-2); margin: 0 0 14px; }
+.bkey__list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.bkey__list button { display: flex; gap: 6px; align-items: baseline; border: 1px solid var(--line); background: transparent; color: var(--text-2); border-radius: 999px; padding: 6px 12px; font: inherit; font-size: 13px; cursor: pointer; transition: background .2s, border-color .2s, color .2s; }
+.bkey__list button span { font-weight: 800; color: #fff; }
+.bkey__list button i { font-style: normal; }
+.bkey__list button:hover { background: var(--bg-hover); }
+.bkey__list button.is-on { border-color: var(--green); background: #232323; color: #fff; }
+.bkey__explain { margin: 16px 0 0; font-size: 16px; color: var(--text-2); min-height: 4.8em; }
+.bkey__explain b { color: #fff; }
+.bkey__nav { display: flex; align-items: center; gap: 12px; margin-top: 12px; font-size: 13px; color: var(--text-3); font-weight: 600; }
+.bkey__nav .pill:disabled { opacity: .35; cursor: default; }
+.bkey__guide circle, .bkey__guide path { fill: none; stroke: #fff; stroke-opacity: .55; stroke-width: 1.2; stroke-dasharray: 3 4; }
+.bkey__guide text { fill: #fff; font-size: 12px; font-weight: 700; }
+.bursts__title { font-size: 20px; margin: 0 0 14px; }

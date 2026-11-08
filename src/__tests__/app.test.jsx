@@ -131,6 +131,58 @@ describe('interactions', () => {
     await act(async () => root.unmount());
   });
 
+  it('hook: rewritten sentence moves from two songs to all hits', async () => {
+    const { host, root } = await mount();
+    const t = host.querySelector('#hook').textContent;
+    expect(t).toContain('That could just be two songs');
+    expect(t).toContain('also more danceable');
+    expect(t).not.toContain('far more danceable');
+    await act(async () => root.unmount());
+  });
+
+  it('song cards: play toggles one card at a time and offers the song', async () => {
+    const { host, root } = await mount();
+    const [a, b] = host.querySelectorAll('#hook .track__play');
+    await act(async () => a.click());
+    expect(host.querySelectorAll('#hook .track.is-playing').length).toBe(1);
+    // with a trackId the Spotify embed mounts, otherwise a Spotify link appears
+    expect(host.querySelector('#hook .track__embed, #hook .track__listen')).not.toBeNull();
+    await act(async () => b.click());
+    const playing = host.querySelectorAll('#hook .track.is-playing');
+    expect(playing.length).toBe(1);
+    expect(playing[0].textContent).toContain('Unholy');
+    await act(async () => b.click());
+    expect(host.querySelectorAll('#hook .track.is-playing').length).toBe(0);
+    await act(async () => root.unmount());
+  });
+
+  it('mood map: defines valence, energy and danceability with the hook songs as anchors', async () => {
+    const { host, root } = await mount();
+    const items = host.querySelectorAll('#mood-map .mkey__item');
+    expect(items.length).toBe(3);
+    const t = host.querySelector('#mood-map .mkey').textContent;
+    ['Happiness (valence)', 'Energy', 'Danceability', 'Bad Moon Rising', 'Unholy'].forEach((w) => expect(t).toContain(w));
+    expect(host.querySelectorAll('#mood-map .mkey__pin').length).toBe(6);
+    await act(async () => root.unmount());
+  });
+
+  it('burst key: steps through the layers of one example genre', async () => {
+    const { host, root } = await mount();
+    const key = host.querySelector('#bursts .bkey');
+    expect(key).not.toBeNull();
+    const buttons = key.querySelectorAll('.bkey__list button');
+    expect(buttons.length).toBe(8);
+    expect(key.querySelector('.bkey__explain').textContent).toContain('each ray is one song');
+    await act(async () => buttons[5].click()); // roots
+    expect(key.querySelector('.bkey__explain').textContent).toContain('acousticness');
+    expect(key.querySelector('.burst__roots').getAttribute('class')).not.toContain('is-dim');
+    expect(key.querySelector('.burst__ripples').getAttribute('class')).toContain('is-dim');
+    const next = [...key.querySelectorAll('.bkey__nav .pill')].find((n) => n.textContent === 'Next');
+    await act(async () => next.click());
+    expect(key.querySelector('.bkey__explain').textContent).toContain('danceability');
+    await act(async () => root.unmount());
+  });
+
   it('finder: lazily loads the search index and builds a playlist', async () => {
     const { host, root } = await mount();
     // IntersectionObserver is absent in jsdom, so the section counts as "in view" and loads the index

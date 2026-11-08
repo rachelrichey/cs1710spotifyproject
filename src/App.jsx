@@ -35,7 +35,7 @@ export default function App() {
       <main>
         <Hero meta={meta} />
         <HookChapter hook={hook} />
-        <MoodMapChapter genres={genres} profile={profile} />
+        <MoodMapChapter genres={genres} profile={profile} hook={hook} />
         <SadderChapter sad={sad} />
         <GenreChapter shift={shift} />
         <CornerChapter hits={hits} profile={profile} />
@@ -57,8 +57,8 @@ export default function App() {
             <p>Complete data pipeline, eight story charts, and a first version of our novel genre-burst view.</p>
           </div>
           <div>
-            <h4>Next</h4>
-            <p>Link the genre bursts to the mood map, add the streaming-era view, and user-test the story.</p>
+            <h4>Changed after user testing</h4>
+            <p>Playable song cards, a key for how Spotify scores a song, a clearer hook, and a step-by-step guide to the genre bursts.</p>
           </div>
         </div>
       </footer>
