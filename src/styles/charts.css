@@ -86,7 +86,7 @@
 .songlist h4 { font-size: 14px; margin-bottom: 6px; letter-spacing: 0; }
 .songlist ul { list-style: none; margin: 0; padding: 0; }
 .songlist li { display: grid; grid-template-columns: 1fr auto; gap: 0 10px; padding: 6px 0; border-top: 1px solid var(--line); font-size: 14px; }
-.songlist li b { grid-column: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.songlist li b { grid-column: 1; overflow-wrap: anywhere; } /* wrap long titles so versions are distinguishable */
 .songlist li span { grid-column: 1; color: var(--text-3); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .songlist li i { grid-column: 2; grid-row: 1 / span 2; align-self: center; font-style: normal; font-weight: 700; color: var(--text-2); font-variant-numeric: tabular-nums; }
 .songlist__empty { font-size: 13px; color: var(--text-3); margin: 0; }
