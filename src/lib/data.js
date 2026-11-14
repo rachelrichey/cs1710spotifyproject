@@ -4,13 +4,15 @@ import { useEffect, useState } from 'react';
 // pipeline (see pipeline/ and docs/DATA_PIPELINE.md).  We cache the promise so
 // several components can ask for the same file and it is only fetched once.
 const cache = new Map();
+// New on every build, so browsers never reuse JSON from an older deploy.
+const BUILD_ID = typeof __BUILD_ID__ === 'undefined' ? 'dev' : __BUILD_ID__;
 
 export function loadJSON(name) {
   if (!cache.has(name)) {
     const base = import.meta.env.BASE_URL || './';
     cache.set(
       name,
-      fetch(`${base}data/${name}.json`).then((r) => {
+      fetch(`${base}data/${name}.json?v=${BUILD_ID}`).then((r) => {
         if (!r.ok) throw new Error(`Could not load data/${name}.json (${r.status})`);
         return r.json();
       }),

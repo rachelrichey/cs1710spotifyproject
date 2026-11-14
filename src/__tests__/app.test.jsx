@@ -11,7 +11,7 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 beforeAll(() => {
   // serve /data/*.json straight from public/data
   globalThis.fetch = vi.fn(async (url) => {
-    const name = String(url).split('/data/')[1];
+    const name = String(url).split('/data/')[1].split('?')[0];
     const body = readFileSync(join(process.cwd(), 'public', 'data', name), 'utf8');
     return { ok: true, status: 200, json: async () => JSON.parse(body) };
   });
