@@ -13,7 +13,10 @@ const MEASURES = [
     name: 'Happiness (valence)',
     ends: ['sad, tense, angry', 'happy, cheerful'],
     what: 'How positive a track sounds, from 0 to 1.',
-    how: 'Spotify’s audio model estimates it from the sound itself, things like key, harmony and brightness. It does not read the lyrics.',
+    from: 'Spotify’s audio model estimates it from the sound itself:',
+    points: ['Key', 'Harmony', 'Brightness'],
+    note: 'It does not read the lyrics.',
+    accent: 'var(--gold)',
     color: (v) => moodColor(v),
   },
   {
@@ -21,7 +24,9 @@ const MEASURES = [
     name: 'Energy',
     ends: ['calm, soft', 'fast, loud, noisy'],
     what: 'How intense and active a track feels, from 0 to 1.',
-    how: 'Built from loudness, dynamic range, timbre, how often new sounds start, and overall noisiness.',
+    from: 'Built from:',
+    points: ['Loudness', 'Dynamic range', 'Timbre', 'How often new sounds start', 'Overall noisiness'],
+    accent: 'var(--purple)',
     color: () => 'var(--purple)',
   },
   {
@@ -29,7 +34,9 @@ const MEASURES = [
     name: 'Danceability',
     ends: ['hard to dance to', 'easy to dance to'],
     what: 'How well a track suits dancing, from 0 to 1.',
-    how: 'Built from tempo, how steady the rhythm is, how strong the beat is, and how regular the song is overall.',
+    from: 'Built from:',
+    points: ['Tempo', 'How steady the rhythm is', 'How strong the beat is', 'How regular the song is overall'],
+    accent: 'var(--green)',
     color: () => 'var(--green)',
   },
 ];
@@ -66,9 +73,13 @@ export default function MeasureKey({ hook }) {
       </p>
       <div className="mkey__grid">
         {MEASURES.map((m) => (
-          <div key={m.key} className="mkey__item">
+          <div key={m.key} className="mkey__item" style={{ '--accent': m.accent }}>
             <h4>{m.name}</h4>
-            <p><b>{m.what}</b> {m.how}</p>
+            <p><b>{m.what}</b> {m.from}</p>
+            <ul className="mkey__points">
+              {m.points.map((pt) => <li key={pt}>{pt}</li>)}
+            </ul>
+            {m.note && <p className="mkey__note">{m.note}</p>}
             <Scale m={m} a={a} b={b} />
           </div>
         ))}

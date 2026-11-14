@@ -234,12 +234,19 @@
 .mkey { margin-bottom: clamp(28px, 5vw, 56px); }
 .mkey h3 { font-size: clamp(24px, 2.6vw, 30px); margin-bottom: 10px; }
 .mkey__lead { color: var(--text-2); font-size: clamp(17px, 1.5vw, 19px); line-height: 1.6; margin: 0 0 28px; max-width: 70ch; }
-.mkey__grid { display: grid; grid-template-columns: 1fr; gap: 44px; max-width: 820px; } /* one score per row: happiness, then energy, then danceability */
-.mkey__item { display: flex; flex-direction: column; }
+.mkey__grid { display: grid; grid-template-columns: 1fr; gap: 20px; max-width: 820px; } /* one score per row: happiness, then energy, then danceability */
+.mkey__item {
+  display: flex; flex-direction: column; padding: clamp(20px, 2.4vw, 28px);
+  background: rgba(255,255,255,.035); border: 1px solid var(--line); border-top: 3px solid var(--accent); border-radius: 14px;
+}
+.mkey__points { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 6px; }
+.mkey__points li { position: relative; padding-left: 20px; font-size: 16px; line-height: 1.5; color: #e6e6e6; }
+.mkey__points li::before { content: ''; position: absolute; left: 2px; top: .6em; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+.mkey__item p.mkey__note { margin-top: 12px; font-style: italic; color: var(--text-2); }
 .mkey__item h4 { font-size: 21px; margin: 0 0 8px; }
 .mkey__item p { margin: 0; font-size: 16px; line-height: 1.65; color: #cfcfcf; }
 .mkey__item p b { color: #fff; font-weight: 700; }
-.mkey__scale { margin-top: auto; padding-top: 44px; } /* pushed to the bottom so all three scales line up */
+.mkey__scale { margin-top: auto; padding-top: 48px; } /* pushed to the bottom so all three scales line up */
 .mkey__track { position: relative; height: 6px; border-radius: 99px; background: #3a3a3a; }
 .mkey__pin { position: absolute; top: 50%; transform: translate(-50%, -50%); }
 .mkey__pin i { display: block; width: 16px; height: 16px; border-radius: 50%; background: var(--c); border: 2px solid #121212; }
