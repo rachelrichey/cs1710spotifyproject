@@ -31,7 +31,7 @@ export default function App() {
 
   return (
     <>
-      <Nav active={active} />
+      <Nav active={active} meta={meta} />
       <main>
         <Hero meta={meta} />
         <HookChapter hook={hook} />
