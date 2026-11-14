@@ -32,7 +32,8 @@ export function HookChapter({ hook }) {
         <Reveal>
           <p className="chapter__dek" style={{ marginTop: 40 }}>
             The newer song is the sadder one, and it is also more danceable ({hook.now.danceability.toFixed(2)} vs. {hook.then.danceability.toFixed(2)}).
-            That could just be two songs. But in the 1960s, fewer than 1 in 5 hits sounded sad ({pct(hook.sad1960s)}), and by the 2010s it was close to half ({pct(hook.sad2010s)}).{' '}
+            That could just be two songs. But in the 1960s, fewer than 1 in 5 hits sounded sad ({pct(hook.sad1960s)}), and by the 2010s it was close to half ({pct(hook.sad2010s)}).
+            <br />
             <b style={{ color: '#fff' }}>Is that a coincidence, or a pattern?</b>
           </p>
         </Reveal>
