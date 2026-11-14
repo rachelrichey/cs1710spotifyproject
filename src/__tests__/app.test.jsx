@@ -166,20 +166,39 @@ describe('interactions', () => {
     await act(async () => root.unmount());
   });
 
-  it('burst key: steps through the layers of one example genre', async () => {
+  it('burst legend: boxed, titled, uses folk and labels every part at once', async () => {
     const { host, root } = await mount();
     const key = host.querySelector('#bursts .bkey');
     expect(key).not.toBeNull();
+    expect(key.querySelector('.bkey__tag').textContent).toBe('Legend');
+    expect(key.querySelector('h3').textContent).toContain('Legend');
+    expect(key.textContent).toContain('Folk');
+    // the annotated chart labels all seven encodings on the folk burst
+    const notes = key.querySelectorAll('.bdia .bdia__note');
+    const titles = [...key.querySelectorAll('.bdia .bdia__title')].map((n) => n.textContent).join(' | ');
+    ['One ray = one song', 'Ray length = energy', 'slow tempo', 'fast tempo', 'Tip colour = happiness', 'Tip size = popularity',
+      'Green roots = acousticness', 'Ripple rings = danceability', 'Dashed wave'].forEach((t) => expect(titles).toContain(t));
+    expect([...notes].some((n) => n.getAttribute('class').includes('is-dim'))).toBe(false);
     const buttons = key.querySelectorAll('.bkey__list button');
-    expect(buttons.length).toBe(8);
-    expect(key.querySelector('.bkey__explain').textContent).toContain('each ray is one song');
-    await act(async () => buttons[5].click()); // roots
+    expect(buttons.length).toBe(9);
+    await act(async () => buttons[6].click()); // roots
     expect(key.querySelector('.bkey__explain').textContent).toContain('acousticness');
     expect(key.querySelector('.burst__roots').getAttribute('class')).not.toContain('is-dim');
     expect(key.querySelector('.burst__ripples').getAttribute('class')).toContain('is-dim');
+    expect(key.querySelector('.bdia__note.is-focus').textContent).toContain('acousticness');
     const next = [...key.querySelectorAll('.bkey__nav .pill')].find((n) => n.textContent === 'Next');
     await act(async () => next.click());
     expect(key.querySelector('.bkey__explain').textContent).toContain('danceability');
+    await act(async () => root.unmount());
+  });
+
+  it('bursts: shows the two most contrasting gallery genres side by side', async () => {
+    const { host, root } = await mount();
+    const c = host.querySelector('#bursts .contrast');
+    expect(c).not.toBeNull();
+    expect(c.querySelector('h3').textContent).toMatch(/Classical vs\. Death Metal/i);
+    expect(c.querySelectorAll('.contrast__glyph svg').length).toBe(2);
+    expect(c.querySelectorAll('.contrast__row:not(.contrast__row--head)').length).toBe(5);
     await act(async () => root.unmount());
   });
 

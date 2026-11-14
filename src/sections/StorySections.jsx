@@ -256,9 +256,9 @@ export function BurstChapter({ bursts }) {
   const ch = chapter('bursts');
   return (
     <Chapter chapter={{ ...ch, title: ch.title }} tint="a"
-      dek="Every genre has a shape. We drew one burst per genre from 28 of its tracks. Start with the key below, then compare genres.">
+      dek="Every genre has a shape. We drew one burst per genre from 28 of its tracks. Start with the legend below, then compare genres.">
       <Reveal><GenreBurst bursts={bursts} /></Reveal>
-      <p className="caveat"><b>Novel view, V2.</b> Our implementation of sketch 11. After user testing we added the step-by-step key above, because seven encodings at once were hard to read at first glance.</p>
+      <p className="caveat"><b>Novel view, V3.</b> Our implementation of sketch 11. After user testing we added a boxed legend that labels every part of one example burst (folk), and a side-by-side of the two most different genres, because seven encodings at once were hard to read at first glance.</p>
     </Chapter>
   );
 }

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { moodColor, prettyGenre } from '../lib/format.js';
 
 /* ==========================================================================
-   NOVEL VIEW (V2, after think-aloud testing): the "genre burst" (sketch 11, Bahar).
+   NOVEL VIEW (V3: boxed legend on folk, most-contrasting pair): the "genre burst" (sketch 11, Bahar).
    One glyph per genre, built from 28 sampled tracks, small-multiple friendly:
      ray length          = energy               (quantitative)
      ray angle in fan    = tempo, slow left -> fast right
@@ -40,22 +40,32 @@ function wavyRing(cx, cy, r, seed) {
 }
 
 /** Layer names used by the "how to read a burst" key. focus = null shows everything at full strength. */
-const LAYER_OF = { one: 'rays', length: 'rays', angle: 'rays', colour: 'tips', size: 'tips', roots: 'roots', rings: 'ripples', wave: 'none' };
+const LAYER_OF = { all: null, one: 'rays', length: 'rays', angle: 'rays', colour: 'tips', size: 'tips', roots: 'roots', rings: 'ripples', wave: 'none' };
 
 export function burstGeometry(size) {
   return { cx: size / 2, cy: size * 0.62, rayMin: size * 0.1, rayMax: size * 0.5 };
 }
 
-export function Burst({ g, size = 200, active = false, id = '', focus = null, hiRay = -1, children = null }) {
-  const layer = focus ? LAYER_OF[focus] : null;
-  const dim = (name) => (layer && layer !== name ? ' is-dim' : '');
+/** Where a track's ray ends, in a burst of the given size (shared with the annotated legend). */
+export function rayEnd([tempo, energy], size) {
   const { cx, cy, rayMin, rayMax } = burstGeometry(size);
+  const t = clamp01((tempo - TEMPO[0]) / (TEMPO[1] - TEMPO[0]));
+  const a = (-64 + t * 128) * (Math.PI / 180);
+  const len = rayMin + energy * (rayMax - rayMin);
+  return [cx + Math.sin(a) * len, cy - Math.cos(a) * len];
+}
+
+export function Burst({ g, size = 200, active = false, id = '', focus = null, hiRay = -1, children = null, frame = null }) {
+  const layer = focus ? LAYER_OF[focus] ?? null : null;
+  const dim = (name) => (layer && layer !== name ? ' is-dim' : '');
+  const { cx, cy } = burstGeometry(size);
   const rings = 1 + Math.round(g.danceability * 5);
   const roots = 3 + Math.round(g.acousticness * 8);
   const rootLen = size * (0.05 + 0.3 * g.acousticness);
 
   return (
-    <svg viewBox={`0 0 ${size} ${size}`} width="100%" className={`burst ${active ? 'is-active' : ''}`} role="img"
+    <svg viewBox={`0 0 ${size} ${size}`} {...(frame ? { x: frame.x, y: frame.y, width: size, height: size } : { width: '100%' })}
+      className={`burst ${active ? 'is-active' : ''}`} role="img"
       aria-label={`${prettyGenre(g.genre)}: energy ${g.energy.toFixed(2)}, valence ${g.valence.toFixed(2)}, danceability ${g.danceability.toFixed(2)}, acousticness ${g.acousticness.toFixed(2)}`}>
       <g className={`burst__ripples${dim('ripples')}`}>
         {Array.from({ length: rings }, (_, k) => (
@@ -76,11 +86,7 @@ export function Burst({ g, size = 200, active = false, id = '', focus = null, hi
       </g>
       <g className="burst__rays">
         {g.tracks.map(([tempo, energy, valence, pop], i) => {
-          const t = clamp01((tempo - TEMPO[0]) / (TEMPO[1] - TEMPO[0]));
-          const a = (-64 + t * 128) * (Math.PI / 180);
-          const len = rayMin + energy * (rayMax - rayMin);
-          const x2 = cx + Math.sin(a) * len;
-          const y2 = cy - Math.cos(a) * len;
+          const [x2, y2] = rayEnd([tempo, energy], size);
           const col = binColor(valence);
           return (
             <g key={i} className={`burst__ray${hiRay >= 0 && hiRay !== i ? ' is-dim' : ''}${hiRay === i ? ' is-hi' : ''}`} style={{ animationDelay: `${i * 14}ms` }}>
@@ -103,9 +109,15 @@ export function Burst({ g, size = 200, active = false, id = '', focus = null, hi
    once. Instead of a legend of seven pills, we take one genre and walk through it
    one layer at a time, with that genre's own numbers.
    --------------------------------------------------------------------------- */
-const EXAMPLE = 'pop';
+const EXAMPLE = 'folk';
 const KEY_SIZE = 300;
 
+/* ---------------------------------------------------------------------------
+   LEGEND (V3, after Milestone 10 feedback). A boxed, clearly titled legend that
+   uses one example genre, folk, and labels every part of its burst at once.
+   The step buttons below the chart highlight one layer at a time on the same
+   chart, with folk's own numbers.
+   --------------------------------------------------------------------------- */
 function keySteps(g) {
   const tr = g.tracks;
   const hi = tr.reduce((b, t, i) => (t[3] > tr[b][3] ? i : b), 0);
@@ -117,7 +129,10 @@ function keySteps(g) {
   const name = raw.charAt(0).toUpperCase() + raw.slice(1);
   return {
     hi,
+    name,
     steps: [
+      { id: 'all', label: 'Everything', means: 'at once',
+        text: <>This is one {name} burst with every part labelled. Each label says what that part shows and gives {name}&rsquo;s own value. Pick a part below to see it on its own.</> },
       { id: 'one', label: 'One ray', means: 'one song',
         text: <>Every burst is made of {tr.length} rays, and <b>each ray is one song</b> from the genre. The highlighted ray is the most popular {name} track in our sample (popularity {hPop}).</> },
       { id: 'length', label: 'Ray length', means: 'energy',
@@ -133,7 +148,7 @@ function keySteps(g) {
       { id: 'rings', label: 'Ripple rings', means: 'danceability',
         text: <>The rings around the centre show <b>danceability</b>: more rings, more danceable. {name} scores {g.danceability.toFixed(2)}, so it gets {1 + Math.round(g.danceability * 5)} rings (up to 6).</> },
       { id: 'wave', label: 'Dashed wave', means: 'most similar genre',
-        text: <>Pick any genre and the panel on the right links it with a <b>dashed wave</b> to the genre it sounds most like. {name}&rsquo;s closest match is <b>{prettyGenre(g.nearest)}</b>.</> },
+        text: <>In the comparison panel further down, a <b>dashed wave</b> links the genre you pick to the genre it sounds most like. {name}&rsquo;s closest match is <b>{prettyGenre(g.nearest)}</b>.</> },
     ],
   };
 }
@@ -169,37 +184,210 @@ function KeyOverlay({ focus }) {
   return null;
 }
 
+/* The annotated chart: the folk burst in the middle, a label with a leader line
+   for every encoding around it, and small scales for colour, size and the wave. */
+const W = 760;
+const FX = 230; // where the burst sits inside the chart
+const FY = 8;
+const LABEL_GAP = 60;
+
+function spread(list) {
+  // keep labels near their anchor's height without overlapping
+  const out = [...list].sort((a, b) => a.anchor[1] - b.anchor[1]);
+  let prev = -Infinity;
+  for (const c of out) {
+    c.ly = Math.max(c.anchor[1], prev + LABEL_GAP, 34);
+    prev = c.ly;
+  }
+  const over = prev - 300;
+  if (over > 0) out.forEach((c) => { c.ly -= over; });
+  return out;
+}
+
+function BurstDiagram({ g, focus, hi, name }) {
+  const S = KEY_SIZE;
+  const { cx, cy } = burstGeometry(S);
+  const tr = g.tracks;
+  // pick each labelled ray from the side its label sits on, so leader lines don't cross the burst
+  const side = (i) => rayEnd(tr[i], S)[0] < cx;
+  const idx = (f, keep = () => true) => {
+    const ok = tr.map((_, i) => i).filter(keep);
+    const list = ok.length ? ok : tr.map((_, i) => i);
+    return list.reduce((b, i) => (f(tr[i]) < f(tr[b]) ? i : b), list[0]);
+  };
+  const at = (i) => { const [x, y] = rayEnd(tr[i], S); return [FX + x, FY + y]; };
+  const longest = idx((t) => -t[1], (i) => !side(i));
+  const slowest = idx((t) => t[0]);
+  const fastest = idx((t) => -t[0]);
+  const saddest = idx((t) => t[2], side);
+  const biggest = idx((t) => -t[3], (i) => !side(i));
+  const topRight = idx((t) => rayEnd(t, S)[1], (i) => !side(i) && i !== biggest && i !== longest);
+  const [lx, ly] = rayEnd(tr[longest], S);
+  const rootLen = S * (0.05 + 0.3 * g.acousticness);
+  const rings = 1 + Math.round(g.danceability * 5);
+  const blue = tr.filter((t) => t[2] < 0.4).length;
+
+  const left = spread([
+    { id: 'colour', anchor: at(saddest), title: 'Tip colour = happiness', sub: `${blue} of ${tr.length} folk tips are blue (sad)` },
+    { id: 'angle', anchor: at(slowest), title: 'Leans left = slow tempo', sub: `slowest folk song: ${Math.round(tr[slowest][0])} BPM` },
+    { id: 'rings', anchor: [FX + cx - 12 - S * 0.045, FY + cy], title: 'Ripple rings = danceability', sub: `folk ${g.danceability.toFixed(2)} → ${rings} of 6 rings` },
+    { id: 'roots', anchor: [FX + cx - 6, FY + cy + rootLen * 0.55], title: 'Green roots = acousticness', sub: `folk ${g.acousticness.toFixed(2)}: more roots, more acoustic` },
+  ]);
+  const right = spread([
+    { id: 'one', anchor: at(topRight), title: 'One ray = one song', sub: `${tr.length} folk songs, one ray each` },
+    { id: 'length', anchor: [FX + (cx + lx) / 2, FY + (cy + ly) / 2], title: 'Ray length = energy', sub: `folk averages ${g.energy.toFixed(2)} (0 to 1)` },
+    { id: 'size', anchor: at(biggest), title: 'Tip size = popularity', sub: `this tip: popularity ${tr[biggest][3]}` },
+    { id: 'angle', anchor: at(fastest), title: 'Leans right = fast tempo', sub: `fastest folk song: ${Math.round(tr[fastest][0])} BPM` },
+  ]);
+  const on = (id) => focus === 'all' || focus === id;
+  const cls = (id) => `bdia__note${on(id) ? '' : ' is-dim'}${focus === id ? ' is-focus' : ''}`;
+
+  const note = (c, side) => {
+    const tx = side === 'L' ? FX - 18 : FX + S + 18;
+    const ex = side === 'L' ? FX - 8 : FX + S + 8;
+    return (
+      <g key={`${c.id}-${side}-${c.title}`} className={cls(c.id)}>
+        <path d={`M${tx + (side === 'L' ? 4 : -4)} ${c.ly - 5} L${ex} ${c.ly - 5} L${c.anchor[0]} ${c.anchor[1]}`} className="bdia__leader" />
+        <circle cx={c.anchor[0]} cy={c.anchor[1]} r="3.2" className="bdia__dot" />
+        <text x={tx} y={c.ly - 9} textAnchor={side === 'L' ? 'end' : 'start'} className="bdia__title">{c.title}</text>
+        <text x={tx} y={c.ly + 8} textAnchor={side === 'L' ? 'end' : 'start'} className="bdia__sub">{c.sub}</text>
+      </g>
+    );
+  };
+
+  const yS = 340; // scales strip
+  return (
+    <svg viewBox={`0 16 ${W} 384`} width="100%" className="bdia" role="img"
+      aria-label={`Annotated ${name} burst: ray = one song, ray length = energy, angle = tempo, tip colour = happiness, tip size = popularity, roots = acousticness, rings = danceability`}>
+      <Burst g={g} size={S} active focus={focus} hiRay={['one', 'length', 'angle', 'colour', 'size'].includes(focus) ? hi : -1}
+        id={name} frame={{ x: FX, y: FY }}>
+        <KeyOverlay focus={focus} />
+      </Burst>
+      {left.map((c) => note(c, 'L'))}
+      {right.map((c) => note(c, 'R'))}
+
+      <line x1="20" x2={W - 20} y1={yS - 26} y2={yS - 26} className="bdia__rule" />
+      <g className={cls('colour')}>
+        <text x="20" y={yS} className="bdia__title">Tip colour</text>
+        {BINS.map((b, i) => <circle key={b} cx={30 + i * 34} cy={yS + 22} r="8" fill={moodColor(b)} />)}
+        <text x="22" y={yS + 50} className="bdia__sub">sad</text>
+        <text x={30 + 4 * 34 + 8} y={yS + 50} textAnchor="end" className="bdia__sub">happy</text>
+      </g>
+      <g className={cls('size')}>
+        <text x="250" y={yS} className="bdia__title">Tip size</text>
+        {[0, 50, 100].map((p, i) => <circle key={p} cx={262 + i * 44} cy={yS + 22} r={(1.4 + (p / 100) * 3.6) * 1.6} fill="#fff" />)}
+        <text x="252" y={yS + 50} className="bdia__sub">less popular</text>
+        <text x={262 + 88 + 10} y={yS + 50} textAnchor="end" className="bdia__sub">more</text>
+      </g>
+      <g className={cls('wave')}>
+        <text x="460" y={yS} className="bdia__title">Dashed wave = most similar genre</text>
+        <path d={`M462 ${yS + 22} q10 -12 20 0 t20 0 t20 0 t20 0`} fill="none" stroke="#fff" strokeWidth="2" strokeDasharray="4 5" strokeLinecap="round" />
+        <text x="548" y={yS + 27} className="bdia__sub">{name} sounds most like {prettyGenre(g.nearest).replace(/\b\w/g, (c) => c.toUpperCase())}</text>
+        <text x="462" y={yS + 50} className="bdia__sub">shown in the comparison panel below</text>
+      </g>
+    </svg>
+  );
+}
+
 function BurstKey({ g }) {
   const [i, setI] = useState(0);
-  const { hi, steps } = useMemo(() => keySteps(g), [g]);
+  const { hi, name, steps } = useMemo(() => keySteps(g), [g]);
   const step = steps[i];
-  const showOne = ['one', 'length', 'angle', 'colour'].includes(step.id);
   return (
-    <section className="bkey card" aria-labelledby="bkey-title">
-      <div className="bkey__glyph">
-        <Burst g={g} size={KEY_SIZE} active focus={step.id} hiRay={showOne ? hi : -1} id={prettyGenre(g.genre)}>
-          <KeyOverlay focus={step.id} />
-        </Burst>
+    <section className="bkey" aria-labelledby="bkey-title">
+      <span className="bkey__tag">Legend</span>
+      <h3 id="bkey-title">Legend: how to read a burst</h3>
+      <p className="bkey__sub">Our example is <b>{name}</b>. Every burst in this chapter is built the same way.</p>
+      <div className="bdia__scroll"><BurstDiagram g={g} focus={step.id} hi={hi} name={name} /></div>
+      <ol className="bkey__list" aria-label="Parts of a burst">
+        {steps.map((s, k) => (
+          <li key={s.id}>
+            <button type="button" className={k === i ? 'is-on' : ''} aria-pressed={k === i} onClick={() => setI(k)}>
+              <span>{s.label}</span><i>{s.means}</i>
+            </button>
+          </li>
+        ))}
+      </ol>
+      <p className="bkey__explain" aria-live="polite">{step.text}</p>
+      <div className="bkey__nav">
+        <button type="button" className="pill" disabled={i === 0} onClick={() => setI(i - 1)}>Back</button>
+        <span>{i + 1} of {steps.length}</span>
+        <button type="button" className="pill" disabled={i === steps.length - 1} onClick={() => setI(i + 1)}>Next</button>
       </div>
-      <div className="bkey__text">
-        <h3 id="bkey-title">How to read a burst</h3>
-        <p className="bkey__sub">One genre, {prettyGenre(g.genre)}, taken apart one layer at a time.</p>
-        <ol className="bkey__list">
-          {steps.map((s, k) => (
-            <li key={s.id}>
-              <button type="button" className={k === i ? 'is-on' : ''} aria-pressed={k === i} onClick={() => setI(k)}>
-                <span>{s.label}</span><i>{s.means}</i>
-              </button>
-            </li>
+    </section>
+  );
+}
+
+/* ---------------------------------------------------------------------------
+   The two most different genres in the gallery, computed from the data:
+   largest distance on energy, happiness, danceability, acousticness and tempo
+   (tempo rescaled to 0-1 over 60-200 BPM so it counts the same as the others).
+   --------------------------------------------------------------------------- */
+const FEATURES = [
+  { key: 'energy', label: 'Energy', part: 'ray length', fmt: (v) => v.toFixed(2), unit: (v) => v },
+  { key: 'valence', label: 'Happiness', part: 'tip colour', fmt: (v) => v.toFixed(2), unit: (v) => v },
+  { key: 'danceability', label: 'Danceability', part: 'ripple rings', fmt: (v) => v.toFixed(2), unit: (v) => v },
+  { key: 'acousticness', label: 'Acousticness', part: 'roots', fmt: (v) => v.toFixed(2), unit: (v) => v },
+  { key: 'tempo', label: 'Tempo', part: 'ray angle', fmt: (v) => `${Math.round(v)} BPM`, unit: (v) => clamp01((v - TEMPO[0]) / (TEMPO[1] - TEMPO[0])) },
+];
+
+export function mostContrasting(pool) {
+  let best = null;
+  for (let i = 0; i < pool.length; i++) {
+    for (let j = i + 1; j < pool.length; j++) {
+      const d = Math.hypot(...FEATURES.map((f) => f.unit(pool[i][f.key]) - f.unit(pool[j][f.key])));
+      if (!best || d > best.d) best = { a: pool[i], b: pool[j], d };
+    }
+  }
+  if (!best) return null;
+  // calmer genre on the left
+  return best.a.energy <= best.b.energy ? best : { a: best.b, b: best.a, d: best.d };
+}
+
+function ContrastPair({ pool }) {
+  const pair = useMemo(() => mostContrasting(pool), [pool]);
+  if (!pair) return null;
+  const { a, b } = pair;
+  const title = (g) => prettyGenre(g.genre).replace(/\b\w/g, (c) => c.toUpperCase());
+  const A = title(a);
+  const B = title(b);
+  const blue = (g) => g.tracks.filter((t) => t[2] < 0.4).length;
+  const rings = (g) => 1 + Math.round(g.danceability * 5);
+  return (
+    <section className="contrast card" aria-labelledby="contrast-title">
+      <h3 id="contrast-title">The two most different genres: {A} vs. {B}</h3>
+      <p className="contrast__lead">
+        Of the {pool.length} genres in the gallery, these two are furthest apart on energy, happiness, danceability,
+        acousticness and tempo. Side by side, you can see every part of the burst change.
+      </p>
+      <div className="contrast__grid">
+        <figure className="contrast__glyph"><Burst g={a} size={260} active id={A} /></figure>
+        <div className="contrast__rows" role="table" aria-label={`${A} compared with ${B}`}>
+          <div className="contrast__row contrast__row--head" role="row">
+            <span role="columnheader">{A}</span><span role="columnheader">Score (part of burst)</span><span role="columnheader">{B}</span>
+          </div>
+          {FEATURES.map((f) => (
+            <div key={f.key} className="contrast__row" role="row">
+              <span role="cell" className="contrast__val is-a">
+                <i style={{ width: `${f.unit(a[f.key]) * 100}%` }} /> <b>{f.fmt(a[f.key])}</b>
+              </span>
+              <span role="cell" className="contrast__label">{f.label}<em>{f.part}</em></span>
+              <span role="cell" className="contrast__val is-b">
+                <b>{f.fmt(b[f.key])}</b> <i style={{ width: `${f.unit(b[f.key]) * 100}%` }} />
+              </span>
+            </div>
           ))}
-        </ol>
-        <p className="bkey__explain" aria-live="polite">{step.text}</p>
-        <div className="bkey__nav">
-          <button type="button" className="pill" disabled={i === 0} onClick={() => setI(i - 1)}>Back</button>
-          <span>{i + 1} of {steps.length}</span>
-          <button type="button" className="pill" disabled={i === steps.length - 1} onClick={() => setI(i + 1)}>Next</button>
         </div>
+        <figure className="contrast__glyph"><Burst g={b} size={260} active id={B} /></figure>
       </div>
+      <ul className="contrast__look">
+        <li><b>Ray length:</b> {A}&rsquo;s rays are shorter (energy {a.energy.toFixed(2)}) and {B}&rsquo;s reach further toward the edge ({b.energy.toFixed(2)}).</li>
+        <li><b>Roots:</b> {a.acousticness >= b.acousticness ? A : B} has more and longer green roots (acousticness {Math.max(a.acousticness, b.acousticness).toFixed(2)} vs. {Math.min(a.acousticness, b.acousticness).toFixed(2)}).</li>
+        <li><b>Rings:</b> {rings(a) === rings(b)
+          ? <>both get {rings(a)} ripple rings (danceability {a.danceability.toFixed(2)} vs. {b.danceability.toFixed(2)}). How danceable they are is one of the few things these two share.</>
+          : <>{A} gets {rings(a)} ripple rings and {B} gets {rings(b)} (danceability {a.danceability.toFixed(2)} vs. {b.danceability.toFixed(2)}).</>}</li>
+        <li><b>Tip colour:</b> {blue(a)} of {A}&rsquo;s {a.tracks.length} tips are blue, against {blue(b)} of {B}&rsquo;s {b.tracks.length}.</li>
+      </ul>
     </section>
   );
 }
@@ -222,7 +410,8 @@ export default function GenreBurst({ bursts }) {
   return (
     <>
     {byGenre.get(EXAMPLE) && <BurstKey g={byGenre.get(EXAMPLE)} />}
-    <h3 className="bursts__title">Now compare genres</h3>
+    <ContrastPair pool={gallery} />
+    <h3 className="bursts__title">Now compare all genres</h3>
     <div className="bursts">
       <div className="bursts__gallery" role="list" aria-label="Genre bursts, calmer genres first">
         {gallery.map((g) => (

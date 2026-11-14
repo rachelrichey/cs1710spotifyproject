@@ -261,8 +261,23 @@
 /* ---------- chapter 9: how to read a burst (Milestone 10) ---------- */
 .burst .is-dim, .burst .burst__ray.is-dim > * { opacity: .1; transition: opacity .35s; }
 .burst__stem, .burst__tip, .burst__roots, .burst__ripples { transition: opacity .35s; }
-.bkey { overflow: hidden; display: grid; grid-template-columns: minmax(220px, 340px) minmax(0, 1fr); gap: clamp(18px, 3vw, 40px); align-items: center; margin-bottom: clamp(28px, 4vw, 48px); }
-@media (max-width: 760px) { .bkey { grid-template-columns: minmax(0, 1fr); } .bkey__glyph { max-width: 300px; margin: 0 auto; width: 100%; } }
+/* V3: the legend is a clearly boxed, titled panel */
+.bkey { position: relative; margin: 14px 0 clamp(28px, 4vw, 48px); padding: clamp(22px, 3vw, 34px) clamp(16px, 3vw, 32px) clamp(18px, 2.5vw, 26px);
+  border: 2px solid var(--green); border-radius: 18px; background: #181818; }
+.bkey__tag { position: absolute; top: -13px; left: 22px; padding: 3px 12px; border-radius: 999px; background: var(--green); color: #000;
+  font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.bdia { display: block; margin: 6px 0 14px; overflow: visible; }
+.bdia__note { transition: opacity .35s; }
+.bdia__note.is-dim { opacity: .18; }
+.bdia__title { fill: #fff; font-size: 14px; font-weight: 800; }
+.bdia__sub { fill: var(--text-2); font-size: 12px; font-weight: 500; }
+.bdia__leader { fill: none; stroke: #fff; stroke-opacity: .55; stroke-width: 1.2; }
+.bdia__dot { fill: #fff; stroke: #181818; stroke-width: 1.5; }
+.bdia__note.is-focus .bdia__leader { stroke: var(--green); stroke-opacity: 1; stroke-width: 2; }
+.bdia__note.is-focus .bdia__dot { fill: var(--green); }
+.bdia__note.is-focus .bdia__title { fill: var(--green); }
+.bdia__rule { stroke: var(--line); stroke-width: 1; }
+@media (max-width: 760px) { .bdia__scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 -8px; padding: 0 8px; } .bdia__scroll .bdia { min-width: 640px; } }
 .bkey h3 { font-size: 22px; margin-bottom: 4px; }
 .bkey__sub { color: var(--text-2); margin: 0 0 14px; }
 .bkey__list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
@@ -278,3 +293,26 @@
 .bkey__guide circle, .bkey__guide path { fill: none; stroke: #fff; stroke-opacity: .55; stroke-width: 1.2; stroke-dasharray: 3 4; }
 .bkey__guide text { fill: #fff; font-size: 12px; font-weight: 700; }
 .bursts__title { font-size: 20px; margin: 0 0 14px; }
+
+/* ---------- chapter 9: the two most different genres (V3) ---------- */
+.contrast { margin-bottom: clamp(28px, 4vw, 48px); }
+.contrast h3 { font-size: 22px; margin-bottom: 6px; }
+.contrast__lead { color: var(--text-2); margin: 0 0 16px; max-width: 72ch; }
+.contrast__grid { display: grid; grid-template-columns: minmax(150px, 240px) minmax(0, 1fr) minmax(150px, 240px); gap: clamp(12px, 2vw, 28px); align-items: center; }
+@media (max-width: 760px) { .contrast__grid { grid-template-columns: 1fr 1fr; } .contrast__rows { grid-column: 1 / -1; grid-row: 2; } }
+.contrast__glyph { margin: 0; }
+.contrast__rows { display: grid; gap: 10px; }
+.contrast__row { display: grid; grid-template-columns: 1fr minmax(110px, auto) 1fr; gap: 12px; align-items: center; font-size: 14px; }
+.contrast__row--head { font-size: 12px; font-weight: 800; color: var(--text-3); text-transform: uppercase; letter-spacing: .05em; }
+.contrast__row--head span:first-child { text-align: right; }
+.contrast__row--head span:nth-child(2) { text-align: center; }
+.contrast__label { text-align: center; font-weight: 700; color: #fff; line-height: 1.2; }
+.contrast__label em { display: block; font-style: normal; font-weight: 500; font-size: 11px; color: var(--text-3); }
+.contrast__val { display: flex; align-items: center; gap: 8px; }
+.contrast__val.is-a { justify-content: flex-end; }
+.contrast__val i { display: block; height: 8px; border-radius: 99px; max-width: 70%; min-width: 3px; }
+.contrast__val.is-a i { background: #8a8a8a; }
+.contrast__val.is-b i { background: #e6e6e6; }
+.contrast__val b { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.contrast__look { margin: 18px 0 0; padding-left: 18px; color: var(--text-2); display: grid; gap: 6px; font-size: 14px; }
+.contrast__look b { color: #fff; }
