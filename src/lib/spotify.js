@@ -1,7 +1,7 @@
 // Spotify's iFrame embed API (https://developer.spotify.com/documentation/embeds).
 // No account or API key needed: logged-out listeners hear a 30-second preview,
-// logged-in listeners hear the full track. The script is only loaded the first
-// time someone presses play, so the page stays light.
+// logged-in listeners hear the full track. The song cards load it as soon as they
+// mount so that pressing play starts the music without waiting.
 
 const SRC = 'https://open.spotify.com/embed/iframe-api/v1';
 let apiPromise = null;

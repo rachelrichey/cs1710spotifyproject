@@ -21,13 +21,20 @@ function Meter({ label, value, color, on }) {
 /**
  * Spotify's embed player for one track. The API replaces the element it is given
  * with an iframe, so we hand it a child we create ourselves (React never touches it).
- * Starts playing as soon as it is ready and reports pause / end back to the card.
+ * It is built (hidden) as soon as the card mounts, so pressing play only has to call
+ * play() on a player that is already loaded. Reports the end of the track back to the card.
  */
-function SpotifyEmbed({ id, onPaused }) {
+function SpotifyEmbed({ id, playing, onPaused }) {
   const host = useRef(null);
+  const ctrl = useRef(null);
+  const ready = useRef(false);
+  const want = useRef(playing);
+  const ended = useRef(onPaused);
   const [failed, setFailed] = useState(false);
+  want.current = playing;
+  ended.current = onPaused;
+
   useEffect(() => {
-    let ctrl = null;
     let alive = true;
     const el = document.createElement('div');
     host.current?.appendChild(el);
@@ -35,12 +42,15 @@ function SpotifyEmbed({ id, onPaused }) {
       (api) => {
         if (!alive) return;
         api.createController(el, { uri: `spotify:track:${id}`, width: '100%', height: 80 }, (c) => {
-          ctrl = c;
           if (!alive) { c.destroy(); return; }
-          c.addListener('ready', () => c.play());
+          ctrl.current = c;
+          c.addListener('ready', () => {
+            ready.current = true;
+            if (want.current) c.play(); // play was pressed before the player finished loading
+          });
           c.addListener('playback_update', (e) => {
             const d = e?.data;
-            if (d && d.isPaused && d.position > 0 && d.position >= d.duration - 500) onPaused();
+            if (d && d.isPaused && d.position > 0 && d.position >= d.duration - 500) ended.current();
           });
         });
       },
@@ -48,14 +58,26 @@ function SpotifyEmbed({ id, onPaused }) {
     );
     return () => {
       alive = false;
-      if (ctrl) ctrl.destroy();
+      ready.current = false;
+      ctrl.current?.destroy();
+      ctrl.current = null;
       el.remove();
     };
-  }, [id, onPaused]);
+  }, [id]);
+
+  useEffect(() => {
+    const c = ctrl.current;
+    if (!c || !ready.current) return;
+    if (playing) c.play();
+    else c.pause();
+  }, [playing]);
+
   if (failed) {
-    return <a className="track__listen" href={trackUrl(id)} target="_blank" rel="noreferrer">Player blocked here. Open on Spotify &#8599;</a>;
+    return playing
+      ? <a className="track__listen" href={trackUrl(id)} target="_blank" rel="noreferrer">Player blocked here. Open on Spotify &#8599;</a>
+      : null;
   }
-  return <div className="track__embed" ref={host} />;
+  return <div className={`track__embed ${playing ? '' : 'is-idle'}`} ref={host} aria-hidden={!playing} />;
 }
 
 /**
@@ -90,7 +112,7 @@ function TrackCard({ song, role, on, playing, onToggle, onStop }) {
       <p className="track__artist">{song.artist}</p>
       <Meter label="Happiness (valence)" value={song.valence} color={mood} on={on} />
       <Meter label="Danceability" value={song.danceability} color="var(--green)" on={on} />
-      {playing && playable && <SpotifyEmbed id={song.trackId} onPaused={onStop} />}
+      {playable && <SpotifyEmbed id={song.trackId} playing={playing} onPaused={onStop} />}
       {playing && !playable && (
         <a className="track__listen" href={searchUrl(song)} target="_blank" rel="noreferrer">Listen on Spotify &#8599;</a>
       )}

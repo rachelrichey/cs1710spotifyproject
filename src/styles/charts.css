@@ -226,6 +226,8 @@
 /* ---------- chapter 1: real playback (Milestone 10) ---------- */
 .track__embed { margin-top: 14px; min-height: 80px; border-radius: 12px; overflow: hidden; background: #111; }
 .track__embed iframe { display: block; border: 0; border-radius: 12px; }
+/* preloaded but not playing: keep the iframe alive, take up no space */
+.track__embed.is-idle { height: 0; min-height: 0; margin-top: 0; }
 .track__listen { display: inline-block; margin-top: 14px; font-weight: 700; font-size: 14px; color: var(--green); }
 
 /* ---------- chapter 2: how a song gets its scores (Milestone 10) ---------- */
