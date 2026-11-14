@@ -41,7 +41,8 @@ function Scale({ m, a, b }) {
       aria-label={`${m.name}: ${a.name} ${a[m.key].toFixed(2)}, ${b.name} ${b[m.key].toFixed(2)}`}>
       <div className="mkey__track">
         {[a, b].map((s, i) => (
-          <span key={s.name} className={`mkey__pin ${i ? 'is-low' : ''}`} style={{ left: pos(s[m.key]), '--c': m.color(s[m.key]) }}>
+          // labels near either end hang inward so they never spill past the scale
+          <span key={s.name} className={`mkey__pin ${i ? 'is-low' : ''} ${s[m.key] > 0.7 ? 'is-right' : s[m.key] < 0.3 ? 'is-left' : ''}`} style={{ left: pos(s[m.key]), '--c': m.color(s[m.key]) }}>
             <i />
             <em>{s.short} <b>{s[m.key].toFixed(2)}</b></em>
           </span>

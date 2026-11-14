@@ -232,20 +232,24 @@
 
 /* ---------- chapter 2: how a song gets its scores (Milestone 10) ---------- */
 .mkey { margin-bottom: clamp(28px, 5vw, 56px); }
-.mkey h3 { font-size: 22px; margin-bottom: 6px; }
-.mkey__lead { color: var(--text-2); margin: 0 0 18px; max-width: 70ch; }
-.mkey__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 18px 28px; }
-.mkey__item h4 { font-size: 17px; margin: 0 0 4px; }
-.mkey__item p { margin: 0; font-size: 14px; color: var(--text-2); }
+.mkey h3 { font-size: clamp(24px, 2.6vw, 30px); margin-bottom: 10px; }
+.mkey__lead { color: var(--text-2); font-size: clamp(17px, 1.5vw, 19px); line-height: 1.6; margin: 0 0 28px; max-width: 70ch; }
+.mkey__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 32px 40px; }
+.mkey__item { display: flex; flex-direction: column; }
+.mkey__item h4 { font-size: 21px; margin: 0 0 8px; }
+.mkey__item p { margin: 0; font-size: 16px; line-height: 1.65; color: #cfcfcf; }
 .mkey__item p b { color: #fff; font-weight: 700; }
-.mkey__scale { margin-top: 34px; }
+.mkey__scale { margin-top: auto; padding-top: 44px; } /* pushed to the bottom so all three scales line up */
 .mkey__track { position: relative; height: 6px; border-radius: 99px; background: #3a3a3a; }
 .mkey__pin { position: absolute; top: 50%; transform: translate(-50%, -50%); }
-.mkey__pin i { display: block; width: 14px; height: 14px; border-radius: 50%; background: var(--c); border: 2px solid #121212; }
-.mkey__pin em { position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%); white-space: nowrap; font-style: normal; font-size: 11px; font-weight: 600; color: var(--text-2); }
-.mkey__pin.is-low em { bottom: auto; top: 18px; }
+.mkey__pin i { display: block; width: 16px; height: 16px; border-radius: 50%; background: var(--c); border: 2px solid #121212; }
+.mkey__pin em { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); white-space: nowrap; font-style: normal; font-size: 13px; font-weight: 600; color: #cfcfcf; }
+.mkey__pin.is-low em { bottom: auto; top: 20px; }
 .mkey__pin em b { color: #fff; }
-.mkey__ends { display: flex; justify-content: space-between; margin-top: 30px; font-size: 11px; color: var(--text-3); font-weight: 600; }
+.mkey__pin.is-right em { left: auto; right: -8px; transform: none; }
+.mkey__pin.is-left em { left: -8px; transform: none; }
+.mkey .hint { font-size: 14px; margin-top: 24px; }
+.mkey__ends { display: flex; justify-content: space-between; margin-top: 36px; font-size: 13px; color: var(--text-2); font-weight: 600; }
 
 /* ---------- chapter 9: how to read a burst (Milestone 10) ---------- */
 .burst .is-dim, .burst .burst__ray.is-dim > * { opacity: .1; transition: opacity .35s; }
