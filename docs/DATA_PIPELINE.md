@@ -7,6 +7,11 @@ The first 20 columns are the Kaggle [Spotify Tracks Dataset](https://www.kaggle.
 (114 genres x 1,000 tracks). Our team added: `Release Date`, `Date_Match`, `Dates_Cited_In_Notes`, `Date_Check_Detail`,
 `Gender`, `Gender_Source`, `Notes`.
 
+Release dates were web-scraped from Wikipedia, MusicBrainz and Deezer. `Notes` names the source each date came from
+(`Source: Wikipedia ...`) and the other sources it was checked against. `clean_data.py` turns this into `date_source`
+and `date_cross_checked`; `meta.json` reports the counts (`dateSources`, `datesCrossChecked`). Artist gender comes
+mostly from Wikidata (`Gender_Source`).
+
 ## Steps
 
 ### 1. `pipeline/clean_data.py` writes `data/processed/tracks_clean.csv`

@@ -4,7 +4,7 @@
 
 > Since the 1960s, popular music has gotten steadily sadder, but not slower. Today's typical hit is a sad song you can dance to.
 
-Built from 114,000 Spotify tracks (114 genres) with release dates and artist gender added by our team.
+Built from 114,000 Spotify tracks (114 genres) with release dates (web-scraped from Wikipedia, MusicBrainz and Deezer) and artist gender (mostly Wikidata) added by our team.
 Team: Bahar Moradi, Cate Buchan, Rachel Richey, Miles Schwab.
 
 ![hero](docs/screenshots/01-hero.jpg)

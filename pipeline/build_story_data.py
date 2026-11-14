@@ -87,6 +87,8 @@ def main():
         "tracksWithYear": int(len(timed)), "hits": int(len(hits)),
         "genres": int(raw.track_genre.nunique()),
         "yearSources": raw.year_source.value_counts().to_dict(),
+        "dateSources": raw.date_source.value_counts().to_dict(),
+        "datesCrossChecked": int(raw.date_cross_checked.sum()),
         "decades": [{"label": l, "start": a, "end": b} for l, a, b in DECADES],
     })
 

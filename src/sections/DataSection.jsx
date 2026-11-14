@@ -18,12 +18,16 @@ function Step({ n, title, children, code }) {
 export default function DataSection({ meta }) {
   const ch = CHAPTERS.find((c) => c.id === 'data');
   const ys = meta?.yearSources || {};
+  const ds = meta?.dateSources || {};
   return (
     <Chapter chapter={ch} tint="e" dek="Everything on this page is computed from the files in this repository. Here is how raw tracks become charts.">
       <Reveal>
         <div className="pipe">
           <Step n="1" title="Collect" code="data/raw/*.csv">
-            <p>The Kaggle Spotify tracks dataset: 114,000 rows ({meta ? fmt(meta.rawRows) : '113,999'} after dropping one track with no title), {meta?.genres ?? 114} genres with 1,000 tracks each. We added release dates and artist gender (mostly from Wikidata) to every track.</p>
+            <p>The Kaggle Spotify tracks dataset: 114,000 rows ({meta ? fmt(meta.rawRows) : '113,999'} after dropping one track with no title), {meta?.genres ?? 114} genres with 1,000 tracks each. Spotify&rsquo;s data has no release dates, so we web-scraped them from Wikipedia, MusicBrainz and Deezer
+              {meta?.dateSources && <> ({fmt(ds.Wikipedia)}, {fmt(ds.MusicBrainz)} and {fmt(ds.Deezer)} tracks respectively)</>},
+              cross-checking sources whenever more than one listed the song{meta?.datesCrossChecked ? <> ({fmt(meta.datesCrossChecked)} tracks)</> : null}.{' '}
+              We also added artist gender, mostly from Wikidata.</p>
           </Step>
           <Step n="2" title="Clean" code="pipeline/clean_data.py">
             <p>Release dates arrive in four formats and two-digit years are ambiguous. We resolve the century from dates cited in our notes first ({fmt(ys['notes-match'] || 83386)} tracks), fall back to a pivot guess ({fmt(ys['pivot-guess'] || 2827)}), and keep {fmt(ys.missing || 13707)} undated tracks for genre-only charts.</p>
@@ -61,7 +65,7 @@ export default function DataSection({ meta }) {
         <Reveal className="card" delay={160}>
           <h3>Sources and credits</h3>
           <ul className="caveats">
-            <li>Data: <a href="https://www.kaggle.com/datasets/maharshipandya/-spotify-tracks-dataset" target="_blank" rel="noreferrer">Spotify Tracks Dataset on Kaggle</a>, extended with release dates and gender.</li>
+            <li>Data: <a href="https://www.kaggle.com/datasets/maharshipandya/-spotify-tracks-dataset" target="_blank" rel="noreferrer">Spotify Tracks Dataset on Kaggle</a>, extended with release dates our team web-scraped from <a href="https://www.wikipedia.org" target="_blank" rel="noreferrer">Wikipedia</a>, <a href="https://musicbrainz.org" target="_blank" rel="noreferrer">MusicBrainz</a> and <a href="https://www.deezer.com" target="_blank" rel="noreferrer">Deezer</a>, and artist gender from <a href="https://www.wikidata.org" target="_blank" rel="noreferrer">Wikidata</a>.</li>
             <li>Story structure: Brent Dykes&rsquo;s data storytelling arc, laid out in our <a href="https://www.figma.com/board/PQLkrdc1ZrrwmeRjMGMRwC" target="_blank" rel="noreferrer">storyboard</a>.</li>
             <li>Team: Bahar Moradi, Cate Buchan, Rachel Richey, Miles Schwab. Harvard CS 1710.</li>
           </ul>

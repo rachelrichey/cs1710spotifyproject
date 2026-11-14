@@ -130,6 +130,11 @@ def main():
             return np.nan
     df["release_weekday"] = [weekday(d, y) for d, y in zip(full, df["year"])]
 
+    # where each release date was scraped from (first source named in Notes)
+    notes = df["notes"].fillna("").astype(str)
+    df["date_source"] = notes.str.extract(r"^Source:\s*([A-Za-z]+)")[0].fillna("none")
+    df["date_cross_checked"] = notes.str.contains("Other sources|earliest of", regex=True)
+
     # --- gender -----------------------------------------------------------
     flags = [gender_flags(g) for g in df["gender"]]
     df["has_female"] = [f[0] for f in flags]
@@ -142,7 +147,7 @@ def main():
         "popularity", "duration_s", "explicit", "danceability", "energy", "key",
         "loudness", "mode", "speechiness", "acousticness", "instrumentalness",
         "liveness", "valence", "tempo", "time_signature",
-        "year", "year_source", "year_ok", "release_weekday",
+        "year", "year_source", "year_ok", "release_weekday", "date_source", "date_cross_checked",
         "gender", "has_female", "has_male", "artist_type", "n_artists",
     ]
     df[keep].to_csv(OUT, index=False)
