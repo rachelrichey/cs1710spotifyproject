@@ -156,27 +156,27 @@ export function CornerChapter({ hits, profile }) {
     ? [
         <>
           <h3>The mid-1960s</h3>
-          <p>Each dot is a hit. In the mid-1960s, <strong>{pct(f(1965).share.he)}</strong> of them are happy <em>and</em> energetic. Only {pct(f(1965).share.se)} are sad and intense.</p>
+          <p>Each dot is a hit. Everything right of the middle line is the <strong>happy side</strong> (valence 0.5 or higher). In the mid-1960s, <strong>{pct(f(1965).happySide)}</strong> of hits land there. Only {pct(f(1965).share.se)} are sad and intense.</p>
         </>,
         <>
-          <h3>The 1980s peak</h3>
-          <p>The happy, energetic corner is at its fullest: <strong>{pct(f(1985).share.he)}</strong> of hits. But the sad, intense corner is already growing, to {pct(f(1985).share.se)}.</p>
+          <h3>The 1980s</h3>
+          <p>The happy side is already shrinking, to <strong>{pct(f(1985).happySide)}</strong>. Calm happy songs (bottom right) all but vanish, from {pct(f(1965).share.hc)} to {pct(f(1985).share.hc)}, and the sad, intense quarter grows to {pct(f(1985).share.se)}.</p>
         </>,
         <>
           <h3>2000</h3>
-          <p>Energy is near its peak, yet the average hit keeps sliding toward sad. Follow the green marker: it is the average hit, and its trail shows where it has been.</p>
+          <p>Energy is near its peak, yet the average hit keeps sliding left, toward sad, and the happy side is down to {pct(f(2000).happySide)}. Follow the green marker: it is the average hit, and its trail shows where it has been.</p>
         </>,
         <>
           <h3>2012</h3>
-          <p>The happy corner is down to <strong>{pct(f(2012).share.he)}</strong>, and the sad, intense corner ({pct(f(2012).share.se)}) has overtaken it as the busiest place on the map.</p>
+          <p>{f(2012).happySide < 0.5 ? 'Fewer than half of hits are on the happy side now' : 'The happy side keeps shrinking'}: <strong>{pct(f(2012).happySide)}</strong>. The sad, intense quarter holds {pct(f(2012).share.se)}{f(2012).share.se > f(2012).share.he ? ', more than the happy, energetic one' : ''}.</p>
         </>,
         <>
           <h3>2016</h3>
-          <p>Sad and intense hits are now <strong>{pct(f(2016).share.se)}</strong> of all hits, up from {pct(f(1965).share.se)}. Danceability climbs from {profile?.[4]?.hits.danceability.toFixed(2)} (2000s) to {profile?.[6]?.hits.danceability.toFixed(2)} (2020&ndash;22).</p>
+          <p>The happy side is near its lowest: <strong>{pct(f(2016).happySide)}</strong> of hits, down from {pct(f(1965).happySide)} in the mid-1960s. Sad and intense hits are {pct(f(2016).share.se)}, up from {pct(f(1965).share.se)}. Danceability climbs from {profile?.[4]?.hits.danceability.toFixed(2)} (2000s) to {profile?.[6]?.hits.danceability.toFixed(2)} (2020&ndash;22).</p>
         </>,
         <>
           <h3>Your turn</h3>
-          <p><strong>Press play or drag the slider</strong> to watch the average hit travel across the map. In 2022 it&rsquo;s back to {pct(f(2022).share.he)} happy and energetic, a small bounce.</p>
+          <p><strong>Press play or drag the slider</strong> to watch the average hit travel across the map. In 2022 the happy side is back to {pct(f(2022).happySide)}, a small bounce.</p>
         </>,
       ]
     : [<p key="l">Loading&hellip;</p>];

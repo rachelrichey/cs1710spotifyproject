@@ -6,7 +6,7 @@ export const CHAPTERS = [
   { id: 'mood-map', n: 2, nav: 'Measuring mood', title: 'How do you measure a song\u2019s mood?', arc: 'Setting', color: '#1ed760' },
   { id: 'sadder', n: 3, nav: 'Sadder by decade', title: 'Hits got sadder, decade by decade', arc: 'Rising insights', color: '#509bf5' },
   { id: 'genres', n: 4, nav: 'Within genres', title: 'It\u2019s not just which genres got popular', arc: 'Rising insights', color: '#ffc864' },
-  { id: 'corner', n: 5, nav: 'Happy corner', title: 'The happy corner is emptying out', arc: 'Rising insights', color: '#f573a0' },
+  { id: 'corner', n: 5, nav: 'Happy side', title: 'The happy side is emptying out', arc: 'Rising insights', color: '#f573a0' },
   { id: 'main', n: 6, nav: 'Main message', title: 'Today\u2019s hit is a sad song you can dance to', arc: 'Main message', color: '#2ee6a6' },
   { id: 'meaning', n: 7, nav: 'What it means', title: 'What this means for listeners and artists', arc: 'Solution', color: '#ffb454' },
   { id: 'finder', n: 8, nav: 'Your music', title: 'Where does your music land?', arc: 'Call to action', color: '#1ed760' },

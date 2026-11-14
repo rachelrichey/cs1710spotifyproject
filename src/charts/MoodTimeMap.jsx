@@ -23,21 +23,22 @@ export function buildFrames(hits) {
   hits.forEach((h) => (by[h.year] ||= []).push(h));
   const f = {};
   for (let c = Y0; c <= Y1; c++) {
-    let n = 0, sv = 0, se = 0;
+    let n = 0, sv = 0, se = 0, happy = 0;
     const q = { he: 0, se: 0, sc: 0, hc: 0 };
     for (let k = Math.max(Y0, c - HALF); k <= Math.min(Y1, c + HALF); k++) {
       (by[k] || []).forEach((h) => {
         n += 1; sv += h.valence; se += h.energy;
+        if (h.valence >= 0.5) happy += 1; // the happy side = right half of the map
         QUADS.forEach((qd) => { if (qd.test(h.valence, h.energy)) q[qd.id] += 1; });
       });
     }
-    f[c] = { n, valence: sv / n, energy: se / n, share: Object.fromEntries(Object.entries(q).map(([k, v]) => [k, v / n])) };
+    f[c] = { n, valence: sv / n, energy: se / n, share: Object.fromEntries(Object.entries(q).map(([k, v]) => [k, v / n])), happySide: happy / n };
   }
   return { byYear: by, frames: f };
 }
 
 /**
- * Frame 5 / "the happy corner is emptying out".
+ * Frame 5 / "the happy side is emptying out" (the happy side = valence >= 0.5, the right half).
  * Every dot is a hit (popularity >= 60) from a five-year window around the chosen year.
  * A green marker tracks the average hit and leaves a trail from 1960 to now.
  * Dots are drawn on a canvas (thousands of points), everything else is SVG.
@@ -134,12 +135,13 @@ export default function MoodTimeMap({ hits, year, setYear, step }) {
       <div className="timemap__year" aria-live="polite">
         <b>{year}</b>
         <span>hits from {Math.max(Y0, year - HALF)}&ndash;{Math.min(Y1, year + HALF)} &middot; {frame.n.toLocaleString()} songs</span>
+        <span className="timemap__side">Happy side: <strong>{pct(frame.happySide)}</strong></span>
       </div>
       <div ref={wrap} style={{ position: 'relative', width: '100%', height: H }}>
         <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} style={{ position: 'absolute', inset: 0 }} aria-hidden="true">
           <rect x={M.l} y={M.t} width={x(0.5) - M.l} height={y(0.5) - M.t} fill={COLORS.intense} opacity="0.07" />
           <rect x={x(0.5)} y={y(0.5)} width={W - M.r - x(0.5)} height={H - M.b - y(0.5)} fill={COLORS.calm} opacity="0.07" />
-          <rect x={x(0.5)} y={M.t} width={W - M.r - x(0.5)} height={y(0.5) - M.t} fill={COLORS.happy} opacity={0.03 + 0.12 * frame.share.he} />
+          <rect x={x(0.5)} y={M.t} width={W - M.r - x(0.5)} height={H - M.b - M.t} fill={COLORS.happy} opacity={0.03 + 0.12 * frame.happySide} />
           {[0, 0.25, 0.5, 0.75, 1].map((t) => (
             <g key={t} className="axis">
               <line x1={x(t)} x2={x(t)} y1={M.t} y2={H - M.b} className="grid" />
