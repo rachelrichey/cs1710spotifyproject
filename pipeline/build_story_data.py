@@ -70,8 +70,6 @@ def main():
     timed = tracks[tracks.year_ok & tracks.year.between(START, END)].copy()
     timed["year"] = timed["year"].astype(int)
     hits = timed[timed.popularity >= HIT].copy()
-    # "Song - 2018 Remaster" and "Song" are the same song for example lists
-    hits["base_title"] = hits.track_name.astype(str).str.split(" - ").str[0].str.strip().str.lower()
     print(f"unique tracks: {len(tracks):,} | with year {START}-{END}: {len(timed):,} | hits: {len(hits):,}")
 
     def decade_of(y):
@@ -120,8 +118,8 @@ def main():
     rows = []
     for label, a, b in DECADES:
         h = hits[hits.decade == label]
-        ex_sad = (h[h.valence < SAD].drop_duplicates(["base_title", "artists"]).head(4))
-        ex_happy = (h[h.valence >= 0.7].drop_duplicates(["base_title", "artists"]).head(4))
+        ex_sad = (h[h.valence < SAD].drop_duplicates(["track_name", "artists"]).head(4))
+        ex_happy = (h[h.valence >= 0.7].drop_duplicates(["track_name", "artists"]).head(4))
         rows.append({
             "label": label, "start": a, "end": b, "nHits": int(len(h)),
             "sadShare": r((h.valence < SAD).mean(), 4), "valence": r(h.valence.mean(), 3),
