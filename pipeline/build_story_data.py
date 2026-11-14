@@ -53,8 +53,9 @@ def short(s, n=40):
     return s if len(s) <= n else s[: n - 1].rstrip() + "…"
 
 
-def song(row):
-    return {"name": short(row.track_name), "artist": short(row.artists.split(";")[0], 32),
+def song(row, full_name=False):
+    name = str(row.track_name) if full_name else short(row.track_name)
+    return {"name": name, "artist": short(row.artists.split(";")[0], 32),
             "year": int(row.year), "valence": r(row.valence), "energy": r(row.energy),
             "danceability": r(row.danceability), "popularity": int(row.popularity)}
 
@@ -124,8 +125,8 @@ def main():
             "label": label, "start": a, "end": b, "nHits": int(len(h)),
             "sadShare": r((h.valence < SAD).mean(), 4), "valence": r(h.valence.mean(), 3),
             "danceability": r(h.danceability.mean(), 3), "energy": r(h.energy.mean(), 3),
-            "exampleSad": [song(x) for x in ex_sad.itertuples()],
-            "exampleHappy": [song(x) for x in ex_happy.itertuples()],
+            "exampleSad": [song(x, full_name=True) for x in ex_sad.itertuples()],
+            "exampleHappy": [song(x, full_name=True) for x in ex_happy.itertuples()],
         })
     annual = []
     for y in range(START, END + 1):
