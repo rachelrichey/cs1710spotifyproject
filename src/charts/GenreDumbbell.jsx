@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from 'react';
 import { scaleLinear } from 'd3-scale';
 import { useSize } from '../lib/hooks.js';
-import { COLORS, prettyGenre, signed2 } from '../lib/format.js';
+import { CHANGE_COLORS as C, prettyGenre, signed2 } from '../lib/format.js';
 import { Tooltip, useTooltip } from '../components/Tooltip.jsx';
 
 const ROW = 30;
@@ -12,9 +12,10 @@ const MODES = [
 ];
 
 /**
- * Frame 4: one dumbbell per genre, average valence before 2000 (gold) vs since 2010 (blue).
- * Genres are sorted by change, so the eye can read the whole story from the line lengths.
- * The search box finds any genre; rows that got happier are drawn in green.
+ * Frame 4: one arrow per genre, from its average valence before 2000 (hollow dot, where it
+ * started) to since 2010 (arrowhead, where it ended up). Shape shows time; colour shows
+ * direction: red = got sadder, green = got happier. Gold and blue are not used here, so they
+ * keep their happy/sad meaning. Genres are sorted by change; the search box finds any genre.
  */
 export default function GenreDumbbell({ data }) {
   const [mode, setMode] = useState('drops');
@@ -46,7 +47,13 @@ export default function GenreDumbbell({ data }) {
       ))}
       {rows.map((g, i) => {
         const sadder = g.delta < 0;
-        const stroke = sadder ? '#6b6b6b' : COLORS.calm;
+        const col = sadder ? C.sadder : C.happier;
+        // arrowhead at the since-2010 value, pointing the way the genre moved
+        const dir = sadder ? -1 : 1;
+        const tip = x(g.post);
+        const y0 = ROW / 2;
+        const head = `${tip},${y0} ${tip - dir * 11},${y0 - 6} ${tip - dir * 11},${y0 + 6}`;
+        const lineEnd = Math.abs(tip - x(g.pre)) > 11 ? tip - dir * 9 : tip;
         return (
           <g key={g.genre} transform={`translate(0 ${i * ROW})`}>
           <g className="dumb-row"
@@ -54,18 +61,19 @@ export default function GenreDumbbell({ data }) {
             onMouseMove={(e) => show(e, (
               <>
                 <b>{prettyGenre(g.genre)}</b>
-                <div>before 2000: <span style={{ color: COLORS.happy }}>{g.pre.toFixed(2)}</span> ({g.nPre} tracks)</div>
-                <div>since 2010: <span style={{ color: COLORS.sad }}>{g.post.toFixed(2)}</span> ({g.nPost} tracks)</div>
+                <div>before 2000: <b>{g.pre.toFixed(2)}</b> ({g.nPre} tracks)</div>
+                <div>since 2010: <b>{g.post.toFixed(2)}</b> ({g.nPost} tracks)</div>
+                <div style={{ color: col }}>{sadder ? 'got sadder' : 'got happier'} by {Math.abs(g.delta).toFixed(2)}</div>
               </>
             ))}
             onMouseLeave={hide}>
             <rect x="0" y="0" width={W} height={ROW} fill="transparent" />
             <text className="row-label" x={labelW} y={ROW / 2 + 4} textAnchor="end">{prettyGenre(g.genre)}</text>
-            <line className="dumb-line" x1={x(g.pre)} x2={x(g.post)} y1={ROW / 2} y2={ROW / 2} stroke={stroke} strokeWidth="3" strokeLinecap="round"
+            <line className="dumb-line" x1={x(g.pre)} x2={lineEnd} y1={ROW / 2} y2={ROW / 2} stroke={col} strokeOpacity="0.75" strokeWidth="3" strokeLinecap="round"
               style={{ transformOrigin: `${x(g.pre)}px ${ROW / 2}px`, animationDelay: `${Math.min(i, 14) * 35 + 120}ms` }} />
-            <circle cx={x(g.pre)} cy={ROW / 2} r="6" fill={COLORS.happy} />
-            <circle cx={x(g.post)} cy={ROW / 2} r="6" fill={COLORS.sad} />
-            <text className="row-delta" x={W - 4} y={ROW / 2 + 4} textAnchor="end" fill={sadder ? '#b3b3b3' : COLORS.calm}>{signed2(g.delta)}</text>
+            <circle cx={x(g.pre)} cy={ROW / 2} r="5.5" fill="#1f1f1f" stroke={C.start} strokeWidth="2" />
+            <polygon className="dumb-head" points={head} fill={col} stroke="#121212" strokeWidth="1" strokeLinejoin="round" />
+            <text className="row-delta" x={W - 4} y={ROW / 2 + 4} textAnchor="end" fill={col}>{signed2(g.delta)}</text>
           </g>
           </g>
         );
@@ -89,23 +97,33 @@ export default function GenreDumbbell({ data }) {
           <input className="input" type="search" placeholder="Search a genre, try dub, samba or k-pop" value={query} onChange={(e) => setQuery(e.target.value)} />
         </label>
       </div>
+      {/* a worked example instead of colour swatches: start dot -> arrow -> end */}
       <div className="dumbbell__legend">
-        <span><i style={{ background: COLORS.happy }} /> before 2000</span>
-        <span><i style={{ background: COLORS.sad }} /> since 2010</span>
-        <span><i style={{ background: COLORS.calm }} /> got happier</span>
+        <span className="dumbbell__how">
+          <svg viewBox="0 0 64 14" aria-hidden="true">
+            <circle cx="7" cy="7" r="5" fill="#1f1f1f" stroke={C.start} strokeWidth="2" />
+            <line x1="12" x2="52" y1="7" y2="7" stroke="#d9d9d9" strokeWidth="2.5" />
+            <polygon points="62,7 51,1 51,13" fill="#d9d9d9" />
+          </svg>
+          before 2000 &rarr; since 2010
+        </span>
+        <span style={{ color: C.sadder }}>&#9664; got sadder</span>
+        <span style={{ color: C.happier }}>got happier &#9654;</span>
       </div>
       <div ref={wrap} className="dumbbell__axis">
         <svg width={W} height="22" aria-hidden="true">
           {[0, 0.25, 0.5, 0.75, 1].map((t) => (
             <text key={t} className="axis-text" x={x(t)} y="14" textAnchor="middle">{t}</text>
           ))}
+          <text className="axis-text axis-text--cue" x={x(0.125)} y="14" textAnchor="middle">&larr; sadder</text>
+          <text className="axis-text axis-text--cue" x={x(0.875)} y="14" textAnchor="middle">happier &rarr;</text>
           <text className="axis-text" x={W - 4} y="14" textAnchor="end">change</text>
         </svg>
       </div>
       <div className={`dumbbell__body ${rows.length > 12 ? 'is-scroll' : ''}`}>
         {rows.length ? body : <p className="hint" style={{ padding: 16 }}>No genre matches &ldquo;{query}&rdquo;.</p>}
       </div>
-      <p className="hint">Average valence of a genre&rsquo;s tracks. Only genres with at least {data.minTracks} tracks in both periods.</p>
+      <p className="hint">Position = a genre&rsquo;s average happiness score (valence), 0 = sad, 1 = happy. Only genres with at least {data.minTracks} tracks in both periods.</p>
       <Tooltip tip={tip} />
     </div>
   );
