@@ -109,6 +109,8 @@
 .split__text b { color: #fff; }
 .split__chart { padding: 20px; }
 .dumbbell__controls { display: grid; gap: 12px; margin-bottom: 14px; }
+.dumbbell__sub { font-size: 16px; line-height: 1.5; color: var(--text-2); margin: 0 0 10px; }
+.dumbbell__sub b { color: var(--green); }
 .dumbbell__def { font-size: 14px; color: var(--text-2); margin: 0 0 10px; }
 .dumbbell__def b { color: var(--text); }
 .dumb-direct { font-size: 12px; font-weight: 700; fill: var(--text); }

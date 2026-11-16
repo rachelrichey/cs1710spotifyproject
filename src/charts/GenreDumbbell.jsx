@@ -126,6 +126,13 @@ export default function GenreDumbbell({ data }) {
           <input className="input" type="search" placeholder="Search a genre, try dub, samba or k-pop" value={query} onChange={(e) => setQuery(e.target.value)} />
         </label>
       </div>
+      {!query && mode === 'rises' && rows.length > 0 && (
+        // subtitle for the exceptions: they exist, but they barely moved (all numbers from the data)
+        <p className="dumbbell__sub">
+          <b>Got happier, but only marginally.</b> The biggest gain among these {rows.length} genres is {signed2(rows[0].delta)},
+          while the biggest drop is {signed2(data.genres[0].delta)}.
+        </p>
+      )}
       <p className="dumbbell__def"><b>Happiness score:</b> Spotify&rsquo;s valence measure of how cheerful a track sounds, from 0 to 1.</p>
       <div ref={wrap} className="dumbbell__axis">
         <svg width={W} height="22" aria-hidden="true">
