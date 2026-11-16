@@ -5,7 +5,8 @@ import { useSize } from '../lib/hooks.js';
 import { COLORS, moodColor, pct, prettyGenre } from '../lib/format.js';
 import { Tooltip, useTooltip } from '../components/Tooltip.jsx';
 
-const M = { t: 24, r: 20, b: 54, l: 58 };
+const M_STD = { t: 24, r: 20, b: 54, l: 58 };
+const M_BIG = { t: 30, r: 24, b: 68, l: 74 };
 
 /** "Happiest + calmest" and "saddest + most intense" genres: rank by z(valence) - z(energy). */
 export function moodExtremes(genres, k = 4) {
@@ -20,27 +21,28 @@ export function moodExtremes(genres, k = 4) {
 }
 
 /** Place labels so they overlap neither each other nor any other highlighted dot. */
-function layoutLabels(items, x, y, W) {
+function layoutLabels(items, x, y, W, fs = 13) {
+  const k = fs / 13; // label widths / line heights grow with the font
   const dots = items.map((g) => ({ g, px: x(g.valence), py: y(g.energy) }));
   const sorted = [...dots].sort((a, b) => a.py - b.py);
   const placed = [];
   const out = {};
   sorted.forEach((it) => {
-    const right = it.px < W - 160;
+    const right = it.px < W - 160 * k;
     const lx = right ? it.px + 12 : it.px - 12;
-    const w = it.g.genre.length * 7.6 + 10;
+    const w = it.g.genre.length * 7.6 * k + 10;
     const x0 = right ? lx : lx - w;
     const x1 = x0 + w;
     let ly = it.py + 4;
     for (let k = 0; k < 10; k += 1) {
-      const top = ly - 13;
-      const bot = ly + 5;
+      const top = ly - 13 * k;
+      const bot = ly + 5 * k;
       const hitLabel = placed.some((p) => x0 < p.x1 && x1 > p.x0 && top < p.bot && bot > p.top);
       const hitDot = dots.some((d) => d !== it && d.px + 11 > x0 && d.px - 11 < x1 && d.py + 11 > top && d.py - 11 < bot);
       if (!hitLabel && !hitDot) break;
-      ly += 15;
+      ly += 15 * k;
     }
-    placed.push({ x0, x1, top: ly - 13, bot: ly + 5 });
+    placed.push({ x0, x1, top: ly - 13 * k, bot: ly + 5 * k });
     out[it.g.genre] = { lx, ly, px: it.px, py: it.py, anchor: right ? 'start' : 'end' };
   });
   return out;
@@ -53,22 +55,31 @@ function layoutLabels(items, x, y, W) {
  *   step 2  highlight the happiest-and-calmest vs the saddest-and-most-intense genres
  *   step 3  preview the question: where do the *hits* of 1960s and 2020-22 sit?
  */
-export default function MoodMap({ genres, profile, step = 1 }) {
+export default function MoodMap({ genres, profile, step = 1, big: wantBig = false }) {
   const wrap = useRef(null);
   const { width } = useSize(wrap);
+  const W = Math.max(320, width || 680);
+  // big: the chapter 2 version, sized to fill the screen; only when there is room for it (not on phones)
+  const big = wantBig && W >= 600;
+  const M = big ? M_BIG : M_STD;
+  const fs = big ? 16 : 13;
+  const r0 = big ? 7 : 5.5;
+  const r1 = big ? 10 : 8;
   const { ref: tipRef, tip, show, hide } = useTooltip();
   const [hover, setHover] = useState(null);
 
-  const W = Math.max(320, width || 680);
-  const H = Math.max(380, Math.min(W * 0.92, 620));
-  const x = useMemo(() => scaleLinear([0, 1], [M.l, W - M.r]), [W]);
-  const y = useMemo(() => scaleLinear([0, 1], [H - M.b, M.t]), [H]);
+  const vh = typeof window !== 'undefined' ? window.innerHeight : 900;
+  const H = big
+    ? Math.max(400, Math.min(W * 0.95, vh - 170)) // as tall as the screen allows (nav, player bar, hint)
+    : Math.max(380, Math.min(W * 0.92, 620));
+  const x = useMemo(() => scaleLinear([0, 1], [M.l, W - M.r]), [W, M]);
+  const y = useMemo(() => scaleLinear([0, 1], [H - M.b, M.t]), [H, M]);
 
   const { calm, intense } = useMemo(() => moodExtremes(genres), [genres]);
 
   const labelled = useMemo(
-    () => (genres && step === 2 ? layoutLabels(genres.filter((g) => calm.has(g.genre) || intense.has(g.genre)), x, y, W) : {}),
-    [genres, step, calm, intense, x, y, W],
+    () => (genres && step === 2 ? layoutLabels(genres.filter((g) => calm.has(g.genre) || intense.has(g.genre)), x, y, W, fs) : {}),
+    [genres, step, calm, intense, x, y, W, fs],
   );
 
   const del = useMemo(
@@ -107,7 +118,7 @@ export default function MoodMap({ genres, profile, step = 1 }) {
   const last = profile?.[profile.length - 1]?.hits;
 
   return (
-    <div ref={tipRef} className="chart" style={{ position: 'relative' }}>
+    <div ref={tipRef} className={`chart ${big ? 'chart--big' : ''}`} style={{ position: 'relative' }}>
       <div ref={wrap} style={{ width: '100%' }}>
         <svg
           viewBox={`0 0 ${W} ${H}`}
@@ -124,19 +135,19 @@ export default function MoodMap({ genres, profile, step = 1 }) {
             <g key={t} className="axis">
               <line x1={x(t)} x2={x(t)} y1={M.t} y2={H - M.b} className="grid" />
               <line x1={M.l} x2={W - M.r} y1={y(t)} y2={y(t)} className="grid" />
-              <text x={x(t)} y={H - M.b + 20} textAnchor="middle">{t}</text>
+              <text x={x(t)} y={H - M.b + (big ? 24 : 20)} textAnchor="middle">{t}</text>
               <text x={M.l - 10} y={y(t) + 4} textAnchor="end">{t}</text>
             </g>
           ))}
           <line x1={xm} x2={xm} y1={M.t} y2={H - M.b} className="midline" />
           <line x1={M.l} x2={W - M.r} y1={ym} y2={ym} className="midline" />
           <text className="axis-title" x={(M.l + W - M.r) / 2} y={H - 10} textAnchor="middle">Valence: sad to happy</text>
-          <text className="axis-title" transform={`translate(14 ${(M.t + H - M.b) / 2}) rotate(-90)`} textAnchor="middle">Energy: calm to intense</text>
+          <text className="axis-title" transform={`translate(${big ? 18 : 14} ${(M.t + H - M.b) / 2}) rotate(-90)`} textAnchor="middle">Energy: calm to intense</text>
 
           {/* mood names */}
           <g className="mood-names">
-            <text x={M.l + 10} y={M.t + 20} fill={COLORS.intense}>Intense + sad</text>
-            <text x={W - M.r - 10} y={M.t + 20} textAnchor="end" fill={COLORS.happy}>Intense + happy</text>
+            <text x={M.l + 10} y={M.t + (big ? 24 : 20)} fill={COLORS.intense}>Intense + sad</text>
+            <text x={W - M.r - 10} y={M.t + (big ? 24 : 20)} textAnchor="end" fill={COLORS.happy}>Intense + happy</text>
             <text x={M.l + 10} y={H - M.b - 12} fill={COLORS.sad}>Calm + sad</text>
             <text x={W - M.r - 10} y={H - M.b - 12} textAnchor="end" fill={COLORS.calm}>Calm + happy</text>
           </g>
@@ -151,7 +162,7 @@ export default function MoodMap({ genres, profile, step = 1 }) {
             return (
               <g key={g.genre} transform={`translate(${x(g.valence)} ${y(g.energy)})`}>
                 <circle
-                  r={focus ? 8 : hover === g.genre ? 8 : 5.5}
+                  r={focus ? r1 : hover === g.genre ? r1 : r0}
                   fill={moodColor(g.valence)}
                   stroke={focus ? (calm.has(g.genre) ? COLORS.calm : COLORS.intense) : hover === g.genre ? '#fff' : 'none'}
                   strokeWidth="2.5"
@@ -183,10 +194,10 @@ export default function MoodMap({ genres, profile, step = 1 }) {
                 </marker>
               </defs>
               <line x1={x(first.valence)} y1={y(first.energy)} x2={x(last.valence) + 6} y2={y(last.energy) - 3} stroke="#fff" strokeWidth="2.5" strokeDasharray="1 7" strokeLinecap="round" markerEnd="url(#mm-arrow)" />
-              <circle cx={x(first.valence)} cy={y(first.energy)} r="10" fill="none" stroke={COLORS.happy} strokeWidth="3" />
-              <circle cx={x(last.valence)} cy={y(last.energy)} r="10" fill="none" stroke={COLORS.calm} strokeWidth="3" />
-              <text className="callout" x={x(first.valence)} y={y(first.energy) + 28} textAnchor="middle" fill={COLORS.happy}>average 1960s hit</text>
-              <text className="callout" x={x(last.valence)} y={y(last.energy) - 20} textAnchor="middle" fill={COLORS.calm}>average 2020&ndash;22 hit</text>
+              <circle cx={x(first.valence)} cy={y(first.energy)} r={big ? 13 : 10} fill="none" stroke={COLORS.happy} strokeWidth="3" />
+              <circle cx={x(last.valence)} cy={y(last.energy)} r={big ? 13 : 10} fill="none" stroke={COLORS.calm} strokeWidth="3" />
+              <text className="callout" x={x(first.valence)} y={y(first.energy) + (big ? 34 : 28)} textAnchor="middle" fill={COLORS.happy}>average 1960s hit</text>
+              <text className="callout" x={x(last.valence)} y={y(last.energy) - (big ? 24 : 20)} textAnchor="middle" fill={COLORS.calm}>average 2020&ndash;22 hit</text>
             </g>
           )}
         </svg>

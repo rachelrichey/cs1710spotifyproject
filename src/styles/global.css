@@ -189,7 +189,18 @@ button { font: inherit; color: inherit; }
 .step-card p:last-child { margin: 0; }
 .step-card strong { color: var(--text); }
 .step-card .big { display: block; font-size: 52px; font-weight: 800; letter-spacing: -.04em; line-height: 1; color: var(--green); margin-bottom: 6px; }
-.scrolly__visual { align-self: stretch; } /* full-height cell, so the sticky chart has room to stay pinned */
+.scrolly__visual { align-self: stretch; }
+/* chapter 2 mood map: wider than the usual column, bigger step text */
+.scrolly--big {
+  --w: min(1600px, calc(100vw - 2 * clamp(16px, 4vw, 56px) - 16px));
+  width: var(--w); margin-left: calc(50% - var(--w) / 2);
+  grid-template-columns: minmax(300px, 460px) minmax(0, 1fr);
+}
+@media (min-width: 981px) {
+  .scrolly--big .step-card { padding: 28px 30px; }
+  .scrolly--big .step-card h3 { font-size: clamp(28px, 2.6vw, 36px); margin-bottom: 14px; }
+  .scrolly--big .step-card p { font-size: clamp(18px, 1.5vw, 21px); line-height: 1.6; }
+} /* full-height cell, so the sticky chart has room to stay pinned */
 .scrolly__sticky { position: sticky; top: calc(var(--nav-h) + 16px); height: calc(100vh - var(--nav-h) - var(--player-h) - 32px); display: flex; align-items: center; }
 .scrolly__sticky > * { width: 100%; }
 @media (max-width: 980px) {

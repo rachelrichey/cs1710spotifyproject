@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from 'react';
  * The chart stays pinned (position: sticky) while the step cards scroll past.
  * Whichever card crosses the middle of the viewport becomes the active `step`.
  */
-export default function Scrolly({ steps, children, side = 'right', onStep }) {
+export default function Scrolly({ steps, children, side = 'right', onStep, className = '' }) {
   const [active, setActive] = useState(0);
   const refs = useRef([]);
 
@@ -28,7 +28,7 @@ export default function Scrolly({ steps, children, side = 'right', onStep }) {
   }, [active, onStep]);
 
   return (
-    <div className={`scrolly scrolly--${side === 'left' ? 'left' : 'right'}`}>
+    <div className={`scrolly scrolly--${side === 'left' ? 'left' : 'right'} ${className}`}>
       <div className="scrolly__steps">
         {steps.map((content, i) => (
           <div

@@ -71,7 +71,7 @@ export function MoodMapChapter({ genres, profile, hook }) {
   return (
     <Chapter chapter={chapter('mood-map')} tint="c" dek="Before we can say music got sadder, we need a way to measure a song&rsquo;s mood.">
       <Reveal><MeasureKey hook={hook} /></Reveal>
-      <Scrolly steps={steps} side="right">{(step) => <MoodMap genres={genres} profile={profile} step={step} />}</Scrolly>
+      <Scrolly steps={steps} side="right" className="scrolly--big">{(step) => <MoodMap genres={genres} profile={profile} step={step} big />}</Scrolly>
     </Chapter>
   );
 }
