@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { moodColor, prettyGenre } from '../lib/format.js';
+import Scrolly from '../components/Scrolly.jsx';
 
 /* ==========================================================================
    NOVEL VIEW (V3: boxed legend on folk, most-contrasting pair): the "genre burst" (sketch 11, Bahar).
@@ -132,7 +133,7 @@ function keySteps(g) {
     name,
     steps: [
       { id: 'all', label: 'Everything', means: 'at once',
-        text: <>This is one {name} burst with every part labelled. Each label says what that part shows and gives {name}&rsquo;s own value. Pick a part below to see it on its own.</> },
+        text: <>This is one {name} burst with every part labelled. Each label says what that part shows and gives {name}&rsquo;s own value. Keep scrolling to see each part on its own.</> },
       { id: 'one', label: 'One ray', means: 'one song',
         text: <>Every burst is made of {tr.length} rays, and <b>each ray is one song</b> from the genre. The highlighted ray is the most popular {name} track in our sample (popularity {hPop}).</> },
       { id: 'length', label: 'Ray length', means: 'energy',
@@ -290,34 +291,29 @@ function BurstDiagram({ g, focus, hi, name }) {
 }
 
 function BurstKey({ g }) {
-  const [i, setI] = useState(0);
   const { hi, name, steps } = useMemo(() => keySteps(g), [g]);
-  const step = steps[i];
+  // Scrollytelling: the annotated chart stays pinned while these cards scroll past;
+  // whichever card reaches the middle of the screen highlights its part of the chart.
+  const cards = steps.map((s, k) => (
+    <div className="bkey__card">
+      <span className="bkey__num">{k + 1} of {steps.length}</span>
+      <h4>{s.label} <i>= {s.means}</i></h4>
+      <p>{s.text}</p>
+    </div>
+  ));
   return (
     <section className="bkey" aria-labelledby="bkey-title">
       <span className="bkey__tag">Legend</span>
       <h3 id="bkey-title">Legend: how to read a burst</h3>
-      <p className="bkey__sub">Our example is <b>{name}</b>. Every burst in this chapter is built the same way.</p>
-      <div className="bdia__scroll"><BurstDiagram g={g} focus={step.id} hi={hi} name={name} /></div>
-      <h4 className="bkey__steps-title">Walk through it one part at a time</h4>
-      <p className="bkey__steps-hint">Click a card, or use Back and Next. The chart above highlights that part.</p>
-      <ol className="bkey__list" aria-label="Parts of a burst">
-        {steps.map((s, k) => (
-          <li key={s.id}>
-            <button type="button" className={k === i ? 'is-on' : ''} aria-pressed={k === i} onClick={() => setI(k)}>
-              <em>{k + 1}</em>
-              <span>{s.label}</span>
-              <i>{s.means}</i>
-            </button>
-          </li>
-        ))}
-      </ol>
-      <p className="bkey__explain" aria-live="polite">{step.text}</p>
-      <div className="bkey__nav">
-        <button type="button" className="pill bkey__navbtn" disabled={i === 0} onClick={() => setI(i - 1)}>&larr; Back</button>
-        <span>Step {i + 1} of {steps.length}</span>
-        <button type="button" className="pill bkey__navbtn" disabled={i === steps.length - 1} onClick={() => setI(i + 1)}>Next &rarr;</button>
-      </div>
+      <p className="bkey__sub">Our example is <b>{name}</b>. Every burst in this chapter is built the same way. Scroll to walk through it one part at a time.</p>
+      <Scrolly steps={cards} side="right">
+        {(i) => (
+          <div className="bkey__visual">
+            <div className="bdia__scroll"><BurstDiagram g={g} focus={steps[i].id} hi={hi} name={name} /></div>
+            <p className="hint bkey__now">Showing: <b>{steps[i].label}</b> = {steps[i].means}</p>
+          </div>
+        )}
+      </Scrolly>
     </section>
   );
 }
