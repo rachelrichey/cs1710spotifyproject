@@ -20,8 +20,8 @@ export const COLORS = {
   neutral: '#b3b3b3',
 };
 
-/** Time periods in the chapter 4 dumbbell (kept apart from the happy/sad gold and blue). */
-export const PERIOD_COLORS = { before: '#ef4b4b', after: '#3d6bff' };
+/** Chapter 4 arrows: colour = direction of change (kept apart from the happy/sad gold and blue). */
+export const CHANGE_COLORS = { sadder: '#ef4b4b', happier: '#1ed760', start: '#b3b3b3' };
 
 /** valence 0..1 -> blue (sad) -> light grey -> gold (happy). */
 export const moodColor = scaleLinear()
