@@ -330,3 +330,16 @@
 .contrast__val b { font-variant-numeric: tabular-nums; white-space: nowrap; }
 .contrast__look { margin: 18px 0 0; padding-left: 18px; color: var(--text-2); display: grid; gap: 6px; font-size: 14px; }
 .contrast__look b { color: #fff; }
+
+/* ---------- chapter 9: scrolly legend ---------- */
+.bkey .scrolly { grid-template-columns: minmax(250px, 320px) minmax(0, 1fr); gap: clamp(16px, 2.5vw, 32px); margin-top: 8px; }
+.bkey .scrolly__step { min-height: 62vh; }
+.bkey .scrolly__step:last-child { min-height: 50vh; }
+.bkey__card h4 { font-size: 20px; margin: 4px 0 8px; }
+.bkey__card h4 i { font-style: normal; color: var(--green); }
+.bkey__card p { margin: 0; font-size: 15px; color: var(--text-2); }
+.bkey__card p b { color: #fff; }
+.bkey__num { display: inline-block; font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #000; background: var(--green); border-radius: 999px; padding: 2px 10px; }
+.bkey__visual { width: 100%; }
+.bkey__now { margin: 4px 0 0; text-align: center; }
+.bkey__now b { color: var(--green); }

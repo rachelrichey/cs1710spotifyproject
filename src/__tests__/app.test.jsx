@@ -179,16 +179,14 @@ describe('interactions', () => {
     ['One ray = one song', 'Ray length = energy', 'slow tempo', 'fast tempo', 'Tip colour = happiness', 'Tip size = popularity',
       'Green roots = acousticness', 'Ripple rings = danceability', 'Dashed wave'].forEach((t) => expect(titles).toContain(t));
     expect([...notes].some((n) => n.getAttribute('class').includes('is-dim'))).toBe(false);
-    const buttons = key.querySelectorAll('.bkey__list button');
-    expect(buttons.length).toBe(9);
-    await act(async () => buttons[6].click()); // roots
-    expect(key.querySelector('.bkey__explain').textContent).toContain('acousticness');
-    expect(key.querySelector('.burst__roots').getAttribute('class')).not.toContain('is-dim');
-    expect(key.querySelector('.burst__ripples').getAttribute('class')).toContain('is-dim');
-    expect(key.querySelector('.bdia__note.is-focus').textContent).toContain('acousticness');
-    const next = [...key.querySelectorAll('.bkey__nav .pill')].find((n) => n.textContent.includes('Next'));
-    await act(async () => next.click());
-    expect(key.querySelector('.bkey__explain').textContent).toContain('danceability');
+    // scrollytelling: nine step cards scroll past a pinned chart; the first shows everything
+    const cards = key.querySelectorAll('.scrolly__step .bkey__card');
+    expect(cards.length).toBe(9);
+    expect(key.querySelector('.scrolly__sticky .bdia')).not.toBeNull();
+    expect(cards[0].textContent).toContain('Everything');
+    expect(cards[6].textContent).toContain('acousticness');
+    expect(cards[7].textContent).toContain('danceability');
+    expect(key.querySelector('.bkey__now').textContent).toContain('Everything');
     await act(async () => root.unmount());
   });
 
