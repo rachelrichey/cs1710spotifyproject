@@ -6,7 +6,7 @@ import { COLORS, moodColor, pct, prettyGenre } from '../lib/format.js';
 import { Tooltip, useTooltip } from '../components/Tooltip.jsx';
 
 const M_STD = { t: 24, r: 20, b: 54, l: 58 };
-const M_BIG = { t: 30, r: 24, b: 68, l: 74 };
+const M_BIG = { t: 34, r: 24, b: 76, l: 82 };
 
 /** "Happiest + calmest" and "saddest + most intense" genres: rank by z(valence) - z(energy). */
 export function moodExtremes(genres, k = 4) {
@@ -62,7 +62,7 @@ export default function MoodMap({ genres, profile, step = 1, big: wantBig = fals
   // big: the chapter 2 version, sized to fill the screen; only when there is room for it (not on phones)
   const big = wantBig && W >= 600;
   const M = big ? M_BIG : M_STD;
-  const fs = big ? 16 : 13;
+  const fs = big ? 19 : 13;
   const r0 = big ? 7 : 5.5;
   const r1 = big ? 10 : 8;
   const { ref: tipRef, tip, show, hide } = useTooltip();
@@ -135,21 +135,21 @@ export default function MoodMap({ genres, profile, step = 1, big: wantBig = fals
             <g key={t} className="axis">
               <line x1={x(t)} x2={x(t)} y1={M.t} y2={H - M.b} className="grid" />
               <line x1={M.l} x2={W - M.r} y1={y(t)} y2={y(t)} className="grid" />
-              <text x={x(t)} y={H - M.b + (big ? 24 : 20)} textAnchor="middle">{t}</text>
-              <text x={M.l - 10} y={y(t) + 4} textAnchor="end">{t}</text>
+              <text x={x(t)} y={H - M.b + (big ? 26 : 20)} textAnchor="middle">{t}</text>
+              <text x={M.l - 10} y={y(t) + (big ? 6 : 4)} textAnchor="end">{t}</text>
             </g>
           ))}
           <line x1={xm} x2={xm} y1={M.t} y2={H - M.b} className="midline" />
           <line x1={M.l} x2={W - M.r} y1={ym} y2={ym} className="midline" />
           <text className="axis-title" x={(M.l + W - M.r) / 2} y={H - 10} textAnchor="middle">Valence: sad to happy</text>
-          <text className="axis-title" transform={`translate(${big ? 18 : 14} ${(M.t + H - M.b) / 2}) rotate(-90)`} textAnchor="middle">Energy: calm to intense</text>
+          <text className="axis-title" transform={`translate(${big ? 22 : 14} ${(M.t + H - M.b) / 2}) rotate(-90)`} textAnchor="middle">Energy: calm to intense</text>
 
           {/* mood names */}
           <g className="mood-names">
-            <text x={M.l + 10} y={M.t + (big ? 24 : 20)} fill={COLORS.intense}>Intense + sad</text>
-            <text x={W - M.r - 10} y={M.t + (big ? 24 : 20)} textAnchor="end" fill={COLORS.happy}>Intense + happy</text>
-            <text x={M.l + 10} y={H - M.b - 12} fill={COLORS.sad}>Calm + sad</text>
-            <text x={W - M.r - 10} y={H - M.b - 12} textAnchor="end" fill={COLORS.calm}>Calm + happy</text>
+            <text x={M.l + 12} y={M.t + (big ? 30 : 20)} fill={COLORS.intense}>Intense + sad</text>
+            <text x={W - M.r - 12} y={M.t + (big ? 30 : 20)} textAnchor="end" fill={COLORS.happy}>Intense + happy</text>
+            <text x={M.l + 12} y={H - M.b - (big ? 16 : 12)} fill={COLORS.sad}>Calm + sad</text>
+            <text x={W - M.r - 12} y={H - M.b - (big ? 16 : 12)} textAnchor="end" fill={COLORS.calm}>Calm + happy</text>
           </g>
 
           {/* genres */}
@@ -196,8 +196,8 @@ export default function MoodMap({ genres, profile, step = 1, big: wantBig = fals
               <line x1={x(first.valence)} y1={y(first.energy)} x2={x(last.valence) + 6} y2={y(last.energy) - 3} stroke="#fff" strokeWidth="2.5" strokeDasharray="1 7" strokeLinecap="round" markerEnd="url(#mm-arrow)" />
               <circle cx={x(first.valence)} cy={y(first.energy)} r={big ? 13 : 10} fill="none" stroke={COLORS.happy} strokeWidth="3" />
               <circle cx={x(last.valence)} cy={y(last.energy)} r={big ? 13 : 10} fill="none" stroke={COLORS.calm} strokeWidth="3" />
-              <text className="callout" x={x(first.valence)} y={y(first.energy) + (big ? 34 : 28)} textAnchor="middle" fill={COLORS.happy}>average 1960s hit</text>
-              <text className="callout" x={x(last.valence)} y={y(last.energy) - (big ? 24 : 20)} textAnchor="middle" fill={COLORS.calm}>average 2020&ndash;22 hit</text>
+              <text className="callout" x={x(first.valence)} y={y(first.energy) + (big ? 38 : 28)} textAnchor="middle" fill={COLORS.happy}>average 1960s hit</text>
+              <text className="callout" x={x(last.valence)} y={y(last.energy) - (big ? 28 : 20)} textAnchor="middle" fill={COLORS.calm}>average 2020&ndash;22 hit</text>
             </g>
           )}
         </svg>
