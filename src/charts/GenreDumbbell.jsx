@@ -12,7 +12,7 @@ const MODES = [
 ];
 
 /**
- * Frame 4: one arrow per genre, from average valence before 2000 (green dot) to since 2010
+ * Frame 4: one arrow per genre, from average valence before 2000 (red dot) to since 2010
  * (blue arrowhead). Gold and blue are not used here, so they keep their happy/sad meaning.
  * Genres are sorted by change, so the eye can read the whole story from the arrow lengths.
  * The search box finds any genre; arrows that point right (got happier) are drawn brighter.

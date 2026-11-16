@@ -21,7 +21,7 @@ export const COLORS = {
 };
 
 /** Time periods in the chapter 4 dumbbell (kept apart from the happy/sad gold and blue). */
-export const PERIOD_COLORS = { before: '#1ed760', after: '#3d6bff' };
+export const PERIOD_COLORS = { before: '#ef4b4b', after: '#3d6bff' };
 
 /** valence 0..1 -> blue (sad) -> light grey -> gold (happy). */
 export const moodColor = scaleLinear()
