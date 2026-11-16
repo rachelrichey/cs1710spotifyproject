@@ -186,7 +186,7 @@ describe('interactions', () => {
     expect(key.querySelector('.burst__roots').getAttribute('class')).not.toContain('is-dim');
     expect(key.querySelector('.burst__ripples').getAttribute('class')).toContain('is-dim');
     expect(key.querySelector('.bdia__note.is-focus').textContent).toContain('acousticness');
-    const next = [...key.querySelectorAll('.bkey__nav .pill')].find((n) => n.textContent === 'Next');
+    const next = [...key.querySelectorAll('.bkey__nav .pill')].find((n) => n.textContent.includes('Next'));
     await act(async () => next.click());
     expect(key.querySelector('.bkey__explain').textContent).toContain('danceability');
     await act(async () => root.unmount());

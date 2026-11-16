@@ -55,7 +55,7 @@ export function rayEnd([tempo, energy], size) {
   return [cx + Math.sin(a) * len, cy - Math.cos(a) * len];
 }
 
-export function Burst({ g, size = 200, active = false, id = '', focus = null, hiRay = -1, children = null, frame = null }) {
+export function Burst({ g, size = 200, active = false, id = '', focus = null, hiRay = -1, children = null, frame = null, zoom = false }) {
   const layer = focus ? LAYER_OF[focus] ?? null : null;
   const dim = (name) => (layer && layer !== name ? ' is-dim' : '');
   const { cx, cy } = burstGeometry(size);
@@ -64,7 +64,7 @@ export function Burst({ g, size = 200, active = false, id = '', focus = null, hi
   const rootLen = size * (0.05 + 0.3 * g.acousticness);
 
   return (
-    <svg viewBox={`0 0 ${size} ${size}`} {...(frame ? { x: frame.x, y: frame.y, width: size, height: size } : { width: '100%' })}
+    <svg viewBox={zoom ? `${size * 0.04} ${size * 0.09} ${size * 0.92} ${size * 0.91}` : `0 0 ${size} ${size}`} {...(frame ? { x: frame.x, y: frame.y, width: size, height: size } : { width: '100%' })}
       className={`burst ${active ? 'is-active' : ''}`} role="img"
       aria-label={`${prettyGenre(g.genre)}: energy ${g.energy.toFixed(2)}, valence ${g.valence.toFixed(2)}, danceability ${g.danceability.toFixed(2)}, acousticness ${g.acousticness.toFixed(2)}`}>
       <g className={`burst__ripples${dim('ripples')}`}>
@@ -281,7 +281,7 @@ function BurstDiagram({ g, focus, hi, name }) {
       </g>
       <g className={cls('wave')}>
         <text x="460" y={yS} className="bdia__title">Dashed wave = most similar genre</text>
-        <path d={`M462 ${yS + 22} q10 -12 20 0 t20 0 t20 0 t20 0`} fill="none" stroke="#fff" strokeWidth="2" strokeDasharray="4 5" strokeLinecap="round" />
+        <path d={`M462 ${yS + 22} q10 -12 20 0 t20 0 t20 0 t20 0`} fill="none" stroke="var(--green)" strokeWidth="3.5" strokeDasharray="7 6" strokeLinecap="round" />
         <text x="548" y={yS + 27} className="bdia__sub">{name} sounds most like {prettyGenre(g.nearest).replace(/\b\w/g, (c) => c.toUpperCase())}</text>
         <text x="462" y={yS + 50} className="bdia__sub">shown in the comparison panel below</text>
       </g>
@@ -299,20 +299,24 @@ function BurstKey({ g }) {
       <h3 id="bkey-title">Legend: how to read a burst</h3>
       <p className="bkey__sub">Our example is <b>{name}</b>. Every burst in this chapter is built the same way.</p>
       <div className="bdia__scroll"><BurstDiagram g={g} focus={step.id} hi={hi} name={name} /></div>
+      <h4 className="bkey__steps-title">Walk through it one part at a time</h4>
+      <p className="bkey__steps-hint">Click a card, or use Back and Next. The chart above highlights that part.</p>
       <ol className="bkey__list" aria-label="Parts of a burst">
         {steps.map((s, k) => (
           <li key={s.id}>
             <button type="button" className={k === i ? 'is-on' : ''} aria-pressed={k === i} onClick={() => setI(k)}>
-              <span>{s.label}</span><i>{s.means}</i>
+              <em>{k + 1}</em>
+              <span>{s.label}</span>
+              <i>{s.means}</i>
             </button>
           </li>
         ))}
       </ol>
       <p className="bkey__explain" aria-live="polite">{step.text}</p>
       <div className="bkey__nav">
-        <button type="button" className="pill" disabled={i === 0} onClick={() => setI(i - 1)}>Back</button>
-        <span>{i + 1} of {steps.length}</span>
-        <button type="button" className="pill" disabled={i === steps.length - 1} onClick={() => setI(i + 1)}>Next</button>
+        <button type="button" className="pill bkey__navbtn" disabled={i === 0} onClick={() => setI(i - 1)}>&larr; Back</button>
+        <span>Step {i + 1} of {steps.length}</span>
+        <button type="button" className="pill bkey__navbtn" disabled={i === steps.length - 1} onClick={() => setI(i + 1)}>Next &rarr;</button>
       </div>
     </section>
   );
@@ -361,7 +365,7 @@ function ContrastPair({ pool }) {
         acousticness and tempo. Side by side, you can see every part of the burst change.
       </p>
       <div className="contrast__grid">
-        <figure className="contrast__glyph"><Burst g={a} size={260} active id={A} /></figure>
+        <figure className="contrast__glyph"><Burst g={a} size={260} active id={A} zoom /></figure>
         <div className="contrast__rows" role="table" aria-label={`${A} compared with ${B}`}>
           <div className="contrast__row contrast__row--head" role="row">
             <span role="columnheader">{A}</span><span role="columnheader">Score (part of burst)</span><span role="columnheader">{B}</span>
@@ -378,7 +382,7 @@ function ContrastPair({ pool }) {
             </div>
           ))}
         </div>
-        <figure className="contrast__glyph"><Burst g={b} size={260} active id={B} /></figure>
+        <figure className="contrast__glyph"><Burst g={b} size={260} active id={B} zoom /></figure>
       </div>
       <ul className="contrast__look">
         <li><b>Ray length:</b> {A}&rsquo;s rays are shorter (energy {a.energy.toFixed(2)}) and {B}&rsquo;s reach further toward the edge ({b.energy.toFixed(2)}).</li>
@@ -441,12 +445,13 @@ export default function GenreBurst({ bursts }) {
         </ul>
         {near && (
           <button className="bursts__near" onClick={() => setSelected(near.genre)}>
+            <span className="bursts__near-head">{prettyGenre(sel.genre).replace(/\b\w/g, (c) => c.toUpperCase())} sounds most like <b>{prettyGenre(near.genre)}</b></span>
             <div className="bursts__near-glyphs">
-              <div><Burst g={sel} size={120} /></div>
-              <svg viewBox="0 0 80 24" className="bursts__wave" aria-hidden="true"><path d="M2 12 Q12 0 22 12 T42 12 T62 12 T78 12" fill="none" stroke="#fff" strokeWidth="2" strokeDasharray="4 5" strokeLinecap="round" /></svg>
-              <div><Burst g={near} size={120} /></div>
+              <div><Burst g={sel} size={200} id={prettyGenre(sel.genre)} zoom /></div>
+              <svg viewBox="0 0 80 24" className="bursts__wave" aria-hidden="true"><path d="M3 12 Q12 1 21 12 T39 12 T57 12 T77 12" fill="none" stroke="var(--green)" strokeWidth="3.5" strokeDasharray="7 6" strokeLinecap="round" /></svg>
+              <div><Burst g={near} size={200} id={prettyGenre(near.genre)} zoom /></div>
             </div>
-            <span>Sounds most like <b>{prettyGenre(near.genre)}</b>. Click to jump there.</span>
+            <span>Click to jump to {prettyGenre(near.genre).replace(/\b\w/g, (c) => c.toUpperCase())}.</span>
           </button>
         )}
       </aside>
