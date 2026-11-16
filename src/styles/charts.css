@@ -104,6 +104,9 @@
 .dumbbell__controls { display: grid; gap: 12px; margin-bottom: 14px; }
 .dumbbell__legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; color: var(--text-2); margin-bottom: 8px; font-weight: 600; }
 .dumbbell__legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; }
+.dumbbell__legend span { display: inline-flex; align-items: center; }
+.dumbbell__arrow { width: 11px; height: 11px; margin-right: 6px; }
+.dumb-head { animation: fadeUp .5s ease both; }
 .dumbbell__axis svg, .dumbbell__body svg { display: block; }
 .dumbbell__axis { overflow: hidden; }
 .split__chart, .split__text { min-width: 0; }

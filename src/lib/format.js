@@ -20,6 +20,9 @@ export const COLORS = {
   neutral: '#b3b3b3',
 };
 
+/** Time periods in the chapter 4 dumbbell (kept apart from the happy/sad gold and blue). */
+export const PERIOD_COLORS = { before: '#1ed760', after: '#3d6bff' };
+
 /** valence 0..1 -> blue (sad) -> light grey -> gold (happy). */
 export const moodColor = scaleLinear()
   .domain([0, 0.5, 1])

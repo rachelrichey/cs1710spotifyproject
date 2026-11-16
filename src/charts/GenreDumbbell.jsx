@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from 'react';
 import { scaleLinear } from 'd3-scale';
 import { useSize } from '../lib/hooks.js';
-import { COLORS, prettyGenre, signed2 } from '../lib/format.js';
+import { PERIOD_COLORS as P, prettyGenre, signed2 } from '../lib/format.js';
 import { Tooltip, useTooltip } from '../components/Tooltip.jsx';
 
 const ROW = 30;
@@ -12,9 +12,10 @@ const MODES = [
 ];
 
 /**
- * Frame 4: one dumbbell per genre, average valence before 2000 (gold) vs since 2010 (blue).
- * Genres are sorted by change, so the eye can read the whole story from the line lengths.
- * The search box finds any genre; rows that got happier are drawn in green.
+ * Frame 4: one arrow per genre, from average valence before 2000 (green dot) to since 2010
+ * (blue arrowhead). Gold and blue are not used here, so they keep their happy/sad meaning.
+ * Genres are sorted by change, so the eye can read the whole story from the arrow lengths.
+ * The search box finds any genre; arrows that point right (got happier) are drawn brighter.
  */
 export default function GenreDumbbell({ data }) {
   const [mode, setMode] = useState('drops');
@@ -46,7 +47,13 @@ export default function GenreDumbbell({ data }) {
       ))}
       {rows.map((g, i) => {
         const sadder = g.delta < 0;
-        const stroke = sadder ? '#6b6b6b' : COLORS.calm;
+        const stroke = sadder ? '#6b6b6b' : '#d9d9d9';
+        // arrowhead at the since-2010 value, pointing the way the genre moved
+        const dir = sadder ? -1 : 1;
+        const tip = x(g.post);
+        const y0 = ROW / 2;
+        const head = `${tip},${y0} ${tip - dir * 11},${y0 - 6} ${tip - dir * 11},${y0 + 6}`;
+        const lineEnd = Math.abs(tip - x(g.pre)) > 11 ? tip - dir * 9 : tip;
         return (
           <g key={g.genre} transform={`translate(0 ${i * ROW})`}>
           <g className="dumb-row"
@@ -54,18 +61,18 @@ export default function GenreDumbbell({ data }) {
             onMouseMove={(e) => show(e, (
               <>
                 <b>{prettyGenre(g.genre)}</b>
-                <div>before 2000: <span style={{ color: COLORS.happy }}>{g.pre.toFixed(2)}</span> ({g.nPre} tracks)</div>
-                <div>since 2010: <span style={{ color: COLORS.sad }}>{g.post.toFixed(2)}</span> ({g.nPost} tracks)</div>
+                <div>before 2000: <span style={{ color: P.before }}>{g.pre.toFixed(2)}</span> ({g.nPre} tracks)</div>
+                <div>since 2010: <span style={{ color: P.after }}>{g.post.toFixed(2)}</span> ({g.nPost} tracks)</div>
               </>
             ))}
             onMouseLeave={hide}>
             <rect x="0" y="0" width={W} height={ROW} fill="transparent" />
             <text className="row-label" x={labelW} y={ROW / 2 + 4} textAnchor="end">{prettyGenre(g.genre)}</text>
-            <line className="dumb-line" x1={x(g.pre)} x2={x(g.post)} y1={ROW / 2} y2={ROW / 2} stroke={stroke} strokeWidth="3" strokeLinecap="round"
+            <line className="dumb-line" x1={x(g.pre)} x2={lineEnd} y1={ROW / 2} y2={ROW / 2} stroke={stroke} strokeWidth="3" strokeLinecap="round"
               style={{ transformOrigin: `${x(g.pre)}px ${ROW / 2}px`, animationDelay: `${Math.min(i, 14) * 35 + 120}ms` }} />
-            <circle cx={x(g.pre)} cy={ROW / 2} r="6" fill={COLORS.happy} />
-            <circle cx={x(g.post)} cy={ROW / 2} r="6" fill={COLORS.sad} />
-            <text className="row-delta" x={W - 4} y={ROW / 2 + 4} textAnchor="end" fill={sadder ? '#b3b3b3' : COLORS.calm}>{signed2(g.delta)}</text>
+            <circle cx={x(g.pre)} cy={ROW / 2} r="6" fill={P.before} />
+            <polygon className="dumb-head" points={head} fill={P.after} stroke="#121212" strokeWidth="1" strokeLinejoin="round" />
+            <text className="row-delta" x={W - 4} y={ROW / 2 + 4} textAnchor="end" fill={sadder ? '#b3b3b3' : '#fff'} fontWeight={sadder ? undefined : 800}>{signed2(g.delta)}</text>
           </g>
           </g>
         );
@@ -90,9 +97,9 @@ export default function GenreDumbbell({ data }) {
         </label>
       </div>
       <div className="dumbbell__legend">
-        <span><i style={{ background: COLORS.happy }} /> before 2000</span>
-        <span><i style={{ background: COLORS.sad }} /> since 2010</span>
-        <span><i style={{ background: COLORS.calm }} /> got happier</span>
+        <span><i style={{ background: P.before }} /> before 2000</span>
+        <span><svg className="dumbbell__arrow" viewBox="0 0 12 12" aria-hidden="true"><polygon points="12,6 1,0 1,12" fill={P.after} /></svg> since 2010</span>
+        <span>arrows point the way each genre moved: left = sadder, right = happier</span>
       </div>
       <div ref={wrap} className="dumbbell__axis">
         <svg width={W} height="22" aria-hidden="true">
