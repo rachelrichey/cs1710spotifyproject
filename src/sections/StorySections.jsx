@@ -120,13 +120,13 @@ export function GenreChapter({ shift }) {
   const worst = shift?.genres[0];
   const happier = shift ? shift.genres.filter((g) => g.delta > 0) : [];
   return (
-    <Chapter chapter={chapter('genres')} tint="d" dek="Maybe sad genres simply got bigger. If that were true, each genre would stay put. It didn&rsquo;t.">
+    <Chapter chapter={chapter('genres')} tint="d" dek="One explanation is that music didn&rsquo;t get sadder, sad genres just got more popular. If so, each genre would sound the same as it always did. Instead, most genres got sadder themselves.">
       <div className="split">
         <Reveal className="split__text">
           {shift ? (
             <>
-              <span className="bignum">{pct(shift.shareSadder)}</span>
-              <p className="bigcap">of {shift.nGenres} genres sound sadder since 2010 than they did before 2000.</p>
+              <span className="bignum">{shift.nSadder}<small> of {shift.nGenres}</small></span>
+              <p className="bigcap">genres sound sadder since 2010 than they did before 2000.</p>
               <p>
                 The biggest fall is <b>{prettyGenre(worst.genre)}</b>, from {worst.pre.toFixed(2)} to {worst.post.toFixed(2)} on the happiness scale.
                 Only {happier.length} genres moved the other way, including <b>{prettyGenre(happier[happier.length - 1].genre)}</b> and <b>{prettyGenre(happier[happier.length - 2].genre)}</b>.

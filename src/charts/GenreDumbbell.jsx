@@ -5,6 +5,8 @@ import { CHANGE_COLORS as C, prettyGenre, signed2 } from '../lib/format.js';
 import { Tooltip, useTooltip } from '../components/Tooltip.jsx';
 
 const ROW = 30;
+const TOP = 24; // space above row 1 for its 'before 2000' / 'since 2010' labels
+const BOTTOM = 8;
 const MODES = [
   { id: 'drops', label: 'Biggest drops' },
   { id: 'rises', label: 'Got happier' },
@@ -15,7 +17,8 @@ const MODES = [
  * Frame 4: one arrow per genre, from its average valence before 2000 (hollow dot, where it
  * started) to since 2010 (arrowhead, where it ended up). Shape shows time; colour shows
  * direction: red = got sadder, green = got happier. Gold and blue are not used here, so they
- * keep their happy/sad meaning. Genres are sorted by change; the search box finds any genre.
+ * keep their happy/sad meaning. The first row is labelled directly (no legend), and dashed / solid
+ * reference lines mark the average genre in each period. Sorted by change; search finds any genre.
  */
 export default function GenreDumbbell({ data }) {
   const [mode, setMode] = useState('drops');
@@ -36,15 +39,40 @@ export default function GenreDumbbell({ data }) {
   const W = Math.max(300, width || 620);
   const labelW = W < 460 ? 92 : 126;
   const x = useMemo(() => scaleLinear([0, 1], [labelW + 10, W - 58]), [W, labelW]);
+  // the average genre before 2000 and since 2010 (all genres, whatever is filtered)
+  const avg = useMemo(() => {
+    if (!data) return null;
+    const n = data.genres.length;
+    return { pre: data.genres.reduce((s, g) => s + g.pre, 0) / n, post: data.genres.reduce((s, g) => s + g.post, 0) / n };
+  }, [data]);
 
   if (!data) return <div className="chart-loading">Loading genres&hellip;</div>;
 
+  const rowsH = rows.length * ROW;
+  // a label sits beside its mark and runs outward, away from the other label, so the two never collide
+  const pairLabels = (a, b, y, la, lb, cls) => {
+    const aLeft = a <= b;
+    return (
+      <>
+        <text className={cls} x={x(a) + (aLeft ? 6 : -6)} y={y} textAnchor={aLeft ? 'end' : 'start'}>{la}</text>
+        <text className={cls} x={x(b) + (aLeft ? -6 : 6)} y={y} textAnchor={aLeft ? 'start' : 'end'}>{lb}</text>
+      </>
+    );
+  };
+  const first = rows[0];
+
   const body = (
-    <svg width={W} height={Math.max(ROW, rows.length * ROW + 6)} role="img"
-      aria-label={`Dumbbell chart of ${rows.length} genres: valence before 2000 versus since 2010`}>
+    <svg width={W} height={TOP + rowsH + BOTTOM} role="img"
+      aria-label={`Arrow chart of ${rows.length} genres: happiness score before 2000 versus since 2010. The average genre moved from ${avg.pre.toFixed(2)} to ${avg.post.toFixed(2)}.`}>
       {[0, 0.25, 0.5, 0.75, 1].map((t) => (
-        <line key={t} x1={x(t)} x2={x(t)} y1="0" y2={rows.length * ROW} className="grid" />
+        <line key={t} x1={x(t)} x2={x(t)} y1={TOP} y2={TOP + rowsH} className="grid" />
       ))}
+      {/* reference lines: the average genre in each period */}
+      <line x1={x(avg.pre)} x2={x(avg.pre)} y1={TOP - 4} y2={TOP + rowsH + 6} className="dumb-ref" strokeDasharray="3 4" />
+      <line x1={x(avg.post)} x2={x(avg.post)} y1={TOP - 4} y2={TOP + rowsH + 6} className="dumb-ref" />
+      {/* label the first row directly instead of a legend */}
+      {first && pairLabels(first.pre, first.post, TOP - 8, 'before 2000', 'since 2010', 'dumb-direct')}
+      <g transform={`translate(0 ${TOP})`}>
       {rows.map((g, i) => {
         const sadder = g.delta < 0;
         const col = sadder ? C.sadder : C.happier;
@@ -78,6 +106,7 @@ export default function GenreDumbbell({ data }) {
           </g>
         );
       })}
+      </g>
     </svg>
   );
 
@@ -97,33 +126,25 @@ export default function GenreDumbbell({ data }) {
           <input className="input" type="search" placeholder="Search a genre, try dub, samba or k-pop" value={query} onChange={(e) => setQuery(e.target.value)} />
         </label>
       </div>
-      {/* a worked example instead of colour swatches: start dot -> arrow -> end */}
-      <div className="dumbbell__legend">
-        <span className="dumbbell__how">
-          <svg viewBox="0 0 64 14" aria-hidden="true">
-            <circle cx="7" cy="7" r="5" fill="#1f1f1f" stroke={C.start} strokeWidth="2" />
-            <line x1="12" x2="52" y1="7" y2="7" stroke="#d9d9d9" strokeWidth="2.5" />
-            <polygon points="62,7 51,1 51,13" fill="#d9d9d9" />
-          </svg>
-          before 2000 &rarr; since 2010
-        </span>
-        <span style={{ color: C.sadder }}>&#9664; got sadder</span>
-        <span style={{ color: C.happier }}>got happier &#9654;</span>
-      </div>
+      <p className="dumbbell__def"><b>Happiness score:</b> Spotify&rsquo;s valence measure of how cheerful a track sounds, from 0 to 1.</p>
       <div ref={wrap} className="dumbbell__axis">
         <svg width={W} height="22" aria-hidden="true">
-          {[0, 0.25, 0.5, 0.75, 1].map((t) => (
+          {(W < 520 ? [0.5] : [0.25, 0.5, 0.75]).map((t) => (
             <text key={t} className="axis-text" x={x(t)} y="14" textAnchor="middle">{t}</text>
           ))}
-          <text className="axis-text axis-text--cue" x={x(0.125)} y="14" textAnchor="middle">&larr; sadder</text>
-          <text className="axis-text axis-text--cue" x={x(0.875)} y="14" textAnchor="middle">happier &rarr;</text>
+          <text className="axis-text axis-text--cue" x={x(0) - 3} y="14" textAnchor="start">0 sad</text>
+          <text className="axis-text axis-text--cue" x={x(1) + 3} y="14" textAnchor="end">1 happy</text>
           <text className="axis-text" x={W - 4} y="14" textAnchor="end">change</text>
         </svg>
       </div>
       <div className={`dumbbell__body ${rows.length > 12 ? 'is-scroll' : ''}`}>
         {rows.length ? body : <p className="hint" style={{ padding: 16 }}>No genre matches &ldquo;{query}&rdquo;.</p>}
       </div>
-      <p className="hint">Position = a genre&rsquo;s average happiness score (valence), 0 = sad, 1 = happy. Only genres with at least {data.minTracks} tracks in both periods.</p>
+      <p className="dumbbell__ref">
+        <svg viewBox="0 0 28 12" aria-hidden="true"><line x1="2" x2="2" y1="0" y2="12" className="dumb-ref" strokeDasharray="3 3" /><line x1="16" x2="16" y1="0" y2="12" className="dumb-ref" /></svg>
+        The average genre: <b>{avg.pre.toFixed(2)}</b> before 2000 (dashed line) &rarr; <b>{avg.post.toFixed(2)}</b> since 2010 (solid line).
+      </p>
+      <p className="hint">Each dot is a genre&rsquo;s average across its tracks. Only genres with at least {data.minTracks} tracks in both periods.</p>
       <Tooltip tip={tip} />
     </div>
   );
