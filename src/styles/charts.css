@@ -100,39 +100,62 @@
 .songlist__empty { font-size: 13px; color: var(--text-3); margin: 0; }
 @media (max-width: 980px) { .decade-panel { display: none; } }
 
-/* ---------- chapter 4: dumbbell ---------- */
-.split { display: grid; grid-template-columns: minmax(260px, 380px) minmax(0, 1fr); gap: clamp(20px, 4vw, 56px); align-items: start; }
+/* ---------- chapter 4: genre arrow chart ---------- */
+.split { display: grid; grid-template-columns: minmax(240px, 320px) minmax(0, 1fr); gap: clamp(20px, 3.5vw, 48px); align-items: start; }
 .split__text { position: sticky; top: calc(var(--nav-h) + 24px); }
-@media (max-width: 980px) { .split { grid-template-columns: minmax(0, 1fr); } .split__text { position: static; } }
-.bignum { display: block; font-size: clamp(88px, 12vw, 150px); font-weight: 800; letter-spacing: -.06em; line-height: .9; color: var(--gold); }
-.bignum small { font-size: .38em; letter-spacing: -.03em; margin-left: .12em; }
-.bigcap { font-size: 24px; font-weight: 700; line-height: 1.2; letter-spacing: -.02em; margin: 8px 0 20px; }
+@media (max-width: 980px) {
+  .split { grid-template-columns: minmax(0, 1fr); } .split__text { position: static; }
+  .split--genres .split__text { order: 2; } /* phones: chart first, notes after */
+}
 .split__text p { color: var(--text-2); }
 .split__text b { color: #fff; }
 .split__chart { padding: 20px; }
-.dumbbell__controls { display: grid; gap: 12px; margin-bottom: 14px; }
-.dumbbell__sub { font-size: 16px; line-height: 1.5; color: var(--text-2); margin: 0 0 10px; }
-.dumbbell__sub b { color: var(--green); }
-.dumbbell__def { font-size: 14px; color: var(--text-2); margin: 0 0 10px; }
-.dumbbell__def b { color: var(--text); }
-.dumb-direct { font-size: 12px; font-weight: 700; fill: var(--text); }
-.dumb-ref { stroke: #fff; stroke-opacity: .28; stroke-width: 1.5; }
-.dumbbell__ref { font-size: 13px; line-height: 1.5; color: var(--text-2); margin: 10px 0 0; }
-.dumbbell__ref b { color: var(--text); }
-.dumbbell__ref svg { width: 22px; height: 12px; vertical-align: -1px; margin-right: 6px; }
-.dumbbell__ref .dumb-ref { stroke-opacity: .6; }
+.split__chart, .split__text { min-width: 0; }
+
+/* notes beside the chart */
+.gnotes h3 { font-size: 13px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--text-3); margin: 0 0 8px; }
+.gnotes h3:not(:first-child) { margin-top: 22px; }
+.gnotes p { font-size: 15px; line-height: 1.55; margin: 0; }
+.gnotes dl { margin: 0; display: grid; gap: 10px; }
+.gnotes dl div { display: grid; grid-template-columns: 64px 1fr; gap: 10px; font-size: 14px; line-height: 1.5; }
+.gnotes dt { font-weight: 800; color: var(--text); }
+.gnotes dd { margin: 0; color: var(--text-2); }
+
+/* compact overview, always visible */
+.gshift { display: grid; gap: 8px; padding-bottom: 16px; margin-bottom: 16px; border-bottom: 1px solid var(--line); }
+.gshift__nums { display: flex; gap: 20px; align-items: baseline; flex-wrap: wrap; }
+.gshift__num { font-size: 15px; font-weight: 700; color: var(--text-2); }
+.gshift__num b { font-size: 30px; font-weight: 800; letter-spacing: -.03em; color: var(--text); font-variant-numeric: tabular-nums; margin-right: 2px; }
+.gshift__bar { display: flex; height: 8px; border-radius: 99px; overflow: hidden; gap: 2px; }
+.gshift__bar i { display: block; height: 100%; }
+.gshift__cap { margin: 0; font-size: 13px; color: var(--text-2); }
+
+.dumbbell__controls { display: grid; gap: 10px; margin-bottom: 10px; }
+.dumbbell__count { font-size: 14px; color: var(--text-2); margin: 0 0 10px; }
+.dumbbell__count b { color: var(--text); }
+.dumbbell__legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; font-weight: 600; color: var(--text-2); margin: 0 0 6px; }
+.dumbbell__legend span { display: inline-flex; align-items: center; gap: 7px; }
+.dumbbell__legend svg { flex: none; overflow: visible; }
+.dumbbell__ramp { display: inline-block; width: 44px; height: 8px; border-radius: 99px; }
 .axis-text--cue { font-weight: 700; fill: var(--text-2); }
-.dumb-head { animation: fadeUp .5s ease both; }
 .dumbbell__axis svg, .dumbbell__body svg { display: block; }
 .dumbbell__axis { overflow: hidden; }
-.split__chart, .split__text { min-width: 0; }
 .dumbbell__body.is-scroll { max-height: 440px; overflow-y: auto; overflow-x: hidden; scrollbar-color: #555 transparent; }
 .dumbbell__body { border-top: 1px solid var(--line); }
 .row-label { fill: #fff; font-size: 14px; font-weight: 600; text-transform: capitalize; }
-.row-delta { font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
-.dumb-row { animation: fadeUp .5s ease both; }
-.dumb-row:hover rect:first-child { fill: rgba(255,255,255,.05); }
-.dumb-line { animation: growX .7s cubic-bezier(.2,.7,.2,1) both; }
+.row-delta { font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; fill: var(--text); }
+.dumb-row { animation: fadeUp .5s ease both; cursor: pointer; outline: none; }
+.dumb-row:hover .dumb-hit, .dumb-row.is-pinned .dumb-hit { fill: rgba(255,255,255,.05); }
+.dumb-row:focus-visible .dumb-hit { fill: rgba(255,255,255,.06); stroke: var(--green); stroke-width: 2; }
+.dumb-line { stroke: #8f8f8f; stroke-width: 2.5; stroke-linecap: round; animation: growX .7s cubic-bezier(.2,.7,.2,1) both; }
+.dumb-line--static { animation: none; }
+.dumb-head { animation: fadeUp .5s ease both; }
+@media (max-width: 520px) {
+  .split--genres .split__chart { padding: 14px 12px; }
+  .axis-title--sm { font-size: 11px; }
+  .row-label { font-size: 13px; }
+  .gshift__num b { font-size: 26px; }
+}
 @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 @keyframes growX { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 

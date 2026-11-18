@@ -37,7 +37,7 @@ export default function App() {
         <HookChapter hook={hook} />
         <MoodMapChapter genres={genres} profile={profile} hook={hook} />
         <SadderChapter sad={sad} />
-        <GenreChapter shift={shift} />
+        <GenreChapter shift={shift} meta={meta} />
         <CornerChapter hits={hits} profile={profile} />
         <MainChapter profile={profile} />
         <MeaningChapter takeaways={takeaways} />

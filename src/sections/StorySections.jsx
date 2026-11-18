@@ -116,27 +116,29 @@ export function SadderChapter({ sad }) {
 }
 
 /* ------------------------------------------------------------------ 4 */
-export function GenreChapter({ shift }) {
-  const worst = shift?.genres[0];
-  const happier = shift ? shift.genres.filter((g) => g.delta > 0) : [];
+export function GenreChapter({ shift, meta }) {
+  const years = meta?.yearRange;
   return (
-    <Chapter chapter={chapter('genres')} tint="d" dek="One explanation is that music didn&rsquo;t get sadder, sad genres just got more popular. If so, each genre would sound the same as it always did. Instead, most genres got sadder themselves.">
-      <div className="split">
-        <Reveal className="split__text">
+    <Chapter chapter={chapter('genres')} tint="d" compact
+      dek="If hits got sadder only because sadder genres became more popular, each genre would sound about the same over time. Instead, average valence fell within most genres.">
+      <div className="split split--genres">
+        <Reveal className="split__text gnotes">
           {shift ? (
             <>
-              <span className="bignum">{shift.nSadder}<small> of {shift.nGenres}</small></span>
-              <p className="bigcap">genres sound sadder since 2010 than they did before 2000.</p>
-              <p>
-                The biggest fall is <b>{prettyGenre(worst.genre)}</b>, from {worst.pre.toFixed(2)} to {worst.post.toFixed(2)} on the happiness scale.
-                Only {happier.length} genres moved the other way, including <b>{prettyGenre(happier[happier.length - 1].genre)}</b> and <b>{prettyGenre(happier[happier.length - 2].genre)}</b>.
-              </p>
-              <p><b>Try it:</b> search your favourite genre, or switch to <i>Got happier</i> to meet the exceptions.</p>
+              <h3>What this suggests</h3>
+              <p>Lower valence inside genres suggests a changing genre mix is <b>not the only explanation</b>. This chart does not measure how much each one contributes.</p>
+              <h3>What is compared</h3>
+              <dl>
+                <div><dt>Tracks</dt><dd>All dated tracks in each genre, <b>not only hits</b>. The previous chapter counted hits only.</dd></div>
+                <div><dt>Periods</dt><dd>Before 2000{years && <> ({years[0]}&ndash;1999)</>} vs. since 2010{years && <> (2010&ndash;{years[1]})</>}. The 2000s are left out.</dd></div>
+                <div><dt>Genres</dt><dd>Only genres with at least {shift.minTracks} tracks in <b>each</b> period qualify: {shift.nGenres}{meta && <> of {meta.genres}</>}.</dd></div>
+                <div><dt>Valence</dt><dd>Spotify&rsquo;s 0&ndash;1 measure of how positive a track sounds. Each point is a genre&rsquo;s average.</dd></div>
+              </dl>
             </>
           ) : <p>Loading&hellip;</p>}
         </Reveal>
         <Reveal className="split__chart card" delay={100}>
-          <GenreDumbbell data={shift} />
+          <GenreDumbbell data={shift} years={years} />
         </Reveal>
       </div>
     </Chapter>
