@@ -349,6 +349,9 @@
 .bkey .scrolly { grid-template-columns: minmax(250px, 320px) minmax(0, 1fr); gap: clamp(16px, 2.5vw, 32px); margin-top: 8px; }
 .bkey .scrolly__step { min-height: 62vh; }
 .bkey .scrolly__step:last-child { min-height: 50vh; }
+/* phones: the stacked scrolly keeps align-items:start, so the visual would size to the
+   640px-min diagram and widen the page. Stretch it to the column so .bdia__scroll scrolls instead. */
+@media (max-width: 980px) { .bkey .scrolly__visual { align-self: stretch; min-width: 0; } }
 .bkey__card h4 { font-size: 20px; margin: 4px 0 8px; }
 .bkey__card h4 i { font-style: normal; color: var(--green); }
 .bkey__card p { margin: 0; font-size: 15px; color: var(--text-2); }

@@ -36,14 +36,20 @@ export function useInView({ threshold = 0.25, rootMargin = '0px', once = true } 
       setInView(true);
       return undefined;
     }
+    // An element taller than viewport/threshold (e.g. a stacked scrolly on a phone) can never
+    // reach `threshold` of its own area, so it also counts once it fills half the viewport.
+    // Finer thresholds below `threshold` make the observer report that moment.
+    const steps = Array.from({ length: 20 }, (_, i) => (threshold * i) / 20);
     const io = new IntersectionObserver(
-      ([e]) => {
-        if (e.isIntersecting) {
+      (entries) => {
+        const e = entries[entries.length - 1]; // several can queue up during a fast scroll; the last is current
+        const fillsView = e.rootBounds && e.intersectionRect.height >= e.rootBounds.height * 0.5;
+        if (e.isIntersecting && (e.intersectionRatio >= threshold || fillsView)) {
           setInView(true);
           if (once) io.disconnect();
-        } else if (!once) setInView(false);
+        } else if (!once && !e.isIntersecting) setInView(false);
       },
-      { threshold, rootMargin },
+      { threshold: [...steps, threshold], rootMargin },
     );
     io.observe(el);
     return () => io.disconnect();
