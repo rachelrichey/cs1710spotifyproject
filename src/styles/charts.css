@@ -136,7 +136,6 @@
 .dumbbell__legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; font-weight: 600; color: var(--text-2); margin: 0 0 6px; }
 .dumbbell__legend span { display: inline-flex; align-items: center; gap: 7px; }
 .dumbbell__legend svg { flex: none; overflow: visible; }
-.dumbbell__ramp { display: inline-block; width: 44px; height: 8px; border-radius: 99px; }
 .axis-text--cue { font-weight: 700; fill: var(--text-2); }
 .dumbbell__axis svg, .dumbbell__body svg { display: block; }
 .dumbbell__axis { overflow: hidden; }
@@ -147,7 +146,7 @@
 .dumb-row { animation: fadeUp .5s ease both; cursor: pointer; outline: none; }
 .dumb-row:hover .dumb-hit, .dumb-row.is-pinned .dumb-hit { fill: rgba(255,255,255,.05); }
 .dumb-row:focus-visible .dumb-hit { fill: rgba(255,255,255,.06); stroke: var(--green); stroke-width: 2; }
-.dumb-line { stroke: #8f8f8f; stroke-width: 2.5; stroke-linecap: round; animation: growX .7s cubic-bezier(.2,.7,.2,1) both; }
+.dumb-line { stroke: #8f8f8f; stroke-opacity: .8; stroke-width: 2.5; stroke-linecap: round; animation: growX .7s cubic-bezier(.2,.7,.2,1) both; }
 .dumb-line--static { animation: none; }
 .dumb-head { animation: fadeUp .5s ease both; }
 @media (max-width: 520px) {

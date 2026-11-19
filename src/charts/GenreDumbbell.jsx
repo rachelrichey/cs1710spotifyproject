@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from 'react';
 import { scaleLinear } from 'd3-scale';
 import { useSize } from '../lib/hooks.js';
-import { moodColor, prettyGenre } from '../lib/format.js';
+import { CHANGE_COLORS as C, prettyGenre } from '../lib/format.js';
 import { Tooltip, useTooltip } from '../components/Tooltip.jsx';
 
 const ROW = 30;
@@ -16,20 +16,20 @@ export function signedChange(d, digits = 2) {
   return `${d < 0 ? '−' : '+'}${Math.abs(d).toFixed(digits)}`;
 }
 
-/** Endpoint marks, shared by the chart and its legend. Shape = period, colour = valence. */
-function StartMark({ cx, cy, v, r = 6.5 }) {
-  return <circle cx={cx} cy={cy} r={r} fill={moodColor(v)} stroke="#121212" strokeWidth="1.5" />;
+/** Endpoint marks, shared by the chart and its legend. Shape = period; arrow colour = direction. */
+function StartMark({ cx, cy, r = 6 }) {
+  return <circle cx={cx} cy={cy} r={r} fill="#1f1f1f" stroke={C.start} strokeWidth="2" />;
 }
-function EndMark({ tip, cy, dir, v, size = 14 }) {
+function EndMark({ tip, cy, dir, col, size = 14 }) {
   const pts = `${tip},${cy} ${tip - dir * size},${cy - size * 0.55} ${tip - dir * size},${cy + size * 0.55}`;
-  return <polygon points={pts} fill={moodColor(v)} stroke="#121212" strokeWidth="1.2" strokeLinejoin="round" />;
+  return <polygon points={pts} fill={col} stroke="#121212" strokeWidth="1.2" strokeLinejoin="round" />;
 }
 
 /**
  * Frame 4: one arrow per genre on a fixed 0-1 valence axis, from the genre's average valence
- * before 2000 (circle) to since 2010 (arrowhead). Connectors are neutral grey; each endpoint is
- * filled with the site's blue -> gold valence scale. Shape, arrow direction and the signed change
- * carry the comparison, so nothing depends on colour alone.
+ * before 2000 (hollow circle) to since 2010 (arrowhead). The arrow is red when valence fell and
+ * green when it rose (gold and blue keep their site-wide happy/sad meaning). Shape, arrow direction
+ * and the signed change carry the comparison too, so nothing depends on colour alone.
  * Population: ALL dated tracks in each genre (not only hits), genres with >= minTracks per period.
  */
 export default function GenreDumbbell({ data, years }) {
@@ -118,6 +118,7 @@ export default function GenreDumbbell({ data, years }) {
       ))}
       {rows.map((g, i) => {
         const dir = g.delta < 0 ? -1 : 1;
+        const col = g.delta < 0 ? C.sadder : C.happier;
         const tip = x(g.post);
         const y0 = ROW / 2;
         const lineEnd = Math.abs(tip - x(g.pre)) > 14 ? tip - dir * 12 : tip;
@@ -140,10 +141,10 @@ export default function GenreDumbbell({ data, years }) {
               <rect className="dumb-hit" x="0" y="1" width={W} height={ROW - 2} rx="6" fill="transparent" />
               <text className="row-label" x={labelW} y={y0 + 4} textAnchor="end">{prettyGenre(g.genre)}</text>
               <line className="dumb-line" x1={x(g.pre)} x2={lineEnd} y1={y0} y2={y0}
-                style={{ transformOrigin: `${x(g.pre)}px ${y0}px`, animationDelay: `${Math.min(i, 14) * 35 + 120}ms` }} />
-              <StartMark cx={x(g.pre)} cy={y0} v={g.pre} />
-              <g className="dumb-head"><EndMark tip={tip} cy={y0} dir={dir} v={g.post} /></g>
-              <text className="row-delta" x={W - 4} y={y0 + 4} textAnchor="end">{signedChange(g.delta)}</text>
+                style={{ stroke: col, transformOrigin: `${x(g.pre)}px ${y0}px`, animationDelay: `${Math.min(i, 14) * 35 + 120}ms` }} />
+              <StartMark cx={x(g.pre)} cy={y0} />
+              <g className="dumb-head"><EndMark tip={tip} cy={y0} dir={dir} col={col} /></g>
+              <text className="row-delta" x={W - 4} y={y0 + 4} textAnchor="end" style={{ fill: col }}>{signedChange(g.delta)}</text>
             </g>
           </g>
         );
@@ -156,12 +157,12 @@ export default function GenreDumbbell({ data, years }) {
       {/* overview: stays visible whatever the filter */}
       <div className="gshift">
         <div className="gshift__nums">
-          <span className="gshift__num"><b>{nLower}</b> <span aria-hidden="true">&#9660;</span> lower</span>
-          <span className="gshift__num"><b>{nHigher}</b> <span aria-hidden="true">&#9650;</span> higher</span>
+          <span className="gshift__num"><b>{nLower}</b> <span aria-hidden="true" style={{ color: C.sadder }}>&#9660;</span> lower</span>
+          <span className="gshift__num"><b>{nHigher}</b> <span aria-hidden="true" style={{ color: C.happier }}>&#9650;</span> higher</span>
         </div>
         <div className="gshift__bar" role="img" aria-label={`${nLower} of ${n} genres lower, ${nHigher} higher`}>
-          <i style={{ width: `${(nLower / n) * 100}%`, background: moodColor(0.15) }} />
-          <i style={{ width: `${(nHigher / n) * 100}%`, background: moodColor(0.85) }} />
+          <i style={{ width: `${(nLower / n) * 100}%`, background: C.sadder }} />
+          <i style={{ width: `${(nHigher / n) * 100}%`, background: C.happier }} />
         </div>
         <p className="gshift__cap">of {n} eligible genres: average valence since 2010 compared with before 2000.</p>
       </div>
@@ -187,16 +188,18 @@ export default function GenreDumbbell({ data, years }) {
       {/* permanent legend: shape = period, arrow = direction, colour = valence */}
       <div className="dumbbell__legend" aria-hidden="true">
         <span>
-          <svg viewBox="0 0 14 14" width="14" height="14"><StartMark cx={7} cy={7} v={0.5} r={5.5} /></svg>
+          <svg viewBox="0 0 14 14" width="14" height="14"><StartMark cx={7} cy={7} r={5} /></svg>
           Before 2000{years && <> ({years[0]}&ndash;1999)</>}
         </span>
         <span>
-          <svg viewBox="0 0 40 14" width="40" height="14"><line x1="4" x2="28" y1="7" y2="7" className="dumb-line dumb-line--static" /><EndMark tip={38} cy={7} dir={1} v={0.5} size={11} /></svg>
+          <svg viewBox="0 0 40 14" width="40" height="14"><line x1="4" x2="28" y1="7" y2="7" className="dumb-line dumb-line--static" /><EndMark tip={38} cy={7} dir={1} col="#d9d9d9" size={11} /></svg>
           Since 2010{years && <> (2010&ndash;{years[1]})</>}
         </span>
         <span>
-          <i className="dumbbell__ramp" style={{ background: `linear-gradient(90deg, ${moodColor(0)}, ${moodColor(0.5)}, ${moodColor(1)})` }} />
-          Fill = valence, less to more positive
+          <b style={{ color: C.sadder }}>&#9664; red</b> = lower
+        </span>
+        <span>
+          <b style={{ color: C.happier }}>green &#9654;</b> = higher
         </span>
       </div>
 
