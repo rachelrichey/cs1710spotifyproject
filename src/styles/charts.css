@@ -297,6 +297,10 @@
 .mkey__pin em { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); white-space: nowrap; font-style: normal; font-size: 13px; font-weight: 600; color: #cfcfcf; }
 .mkey__pin.is-low em { bottom: auto; top: 20px; }
 .mkey__pin em b { color: #fff; }
+/* the label wears its song's colour and a matching dot, so each label is tied to its pin */
+.mkey__pin em { display: inline-flex; align-items: center; gap: 6px; }
+.mkey__pin em::before { content: ''; flex: none; width: 9px; height: 9px; border-radius: 50%; background: var(--c); }
+.mkey__pin em span { color: var(--c); }
 .mkey__pin.is-right em { left: auto; right: -8px; transform: none; }
 .mkey__pin.is-left em { left: -8px; transform: none; }
 .mkey .hint { font-size: 14px; margin-top: 24px; }
