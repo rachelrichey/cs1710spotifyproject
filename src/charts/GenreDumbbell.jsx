@@ -1,31 +1,47 @@
 import { useMemo, useRef, useState } from 'react';
 import { scaleLinear } from 'd3-scale';
 import { useSize } from '../lib/hooks.js';
-import { CHANGE_COLORS as C, prettyGenre, signed2 } from '../lib/format.js';
+import { CHANGE_COLORS as C, prettyGenre } from '../lib/format.js';
 import { Tooltip, useTooltip } from '../components/Tooltip.jsx';
 
 const ROW = 30;
-const TOP = 24; // space above row 1 for its 'before 2000' / 'since 2010' labels
-const BOTTOM = 8;
 const MODES = [
   { id: 'drops', label: 'Biggest drops' },
   { id: 'rises', label: 'Got happier' },
   { id: 'all', label: 'All genres' },
 ];
 
+/** Signed change with a true minus sign, always the same number of decimals (2 in the chart, 3 in tooltips). */
+export function signedChange(d, digits = 2) {
+  return `${d < 0 ? '−' : '+'}${Math.abs(d).toFixed(digits)}`;
+}
+
+/** Endpoint marks, shared by the chart and its legend. Shape = period; arrow colour = direction. */
+function StartMark({ cx, cy, r = 6 }) {
+  return <circle cx={cx} cy={cy} r={r} fill="#1f1f1f" stroke={C.start} strokeWidth="2" />;
+}
+function EndMark({ tip, cy, dir, col, size = 14 }) {
+  const pts = `${tip},${cy} ${tip - dir * size},${cy - size * 0.55} ${tip - dir * size},${cy + size * 0.55}`;
+  return <polygon points={pts} fill={col} stroke="#121212" strokeWidth="1.2" strokeLinejoin="round" />;
+}
+
 /**
- * Frame 4: one arrow per genre, from its average valence before 2000 (hollow dot, where it
- * started) to since 2010 (arrowhead, where it ended up). Shape shows time; colour shows
- * direction: red = got sadder, green = got happier. Gold and blue are not used here, so they
- * keep their happy/sad meaning. The first row is labelled directly (no legend), and dashed / solid
- * reference lines mark the average genre in each period. Sorted by change; search finds any genre.
+ * Frame 4: one arrow per genre on a fixed 0-1 valence axis, from the genre's average valence
+ * before 2000 (hollow circle) to since 2010 (arrowhead). The arrow is red when valence fell and
+ * green when it rose (gold and blue keep their site-wide happy/sad meaning). Shape, arrow direction
+ * and the signed change carry the comparison too, so nothing depends on colour alone.
+ * Population: ALL dated tracks in each genre (not only hits), genres with >= minTracks per period.
  */
-export default function GenreDumbbell({ data }) {
+export default function GenreDumbbell({ data, years }) {
   const [mode, setMode] = useState('drops');
   const [query, setQuery] = useState('');
+  const [focusIdx, setFocusIdx] = useState(0); // roving tab stop among the rows
+  const rowRefs = useRef([]);
+  const focusedAt = useRef(0);
   const wrap = useRef(null);
   const { width } = useSize(wrap);
   const { ref: tipRef, tip, show, hide } = useTooltip();
+  const [pinned, setPinned] = useState(null); // genre whose tooltip was opened by tap / focus
 
   const rows = useMemo(() => {
     if (!data) return [];
@@ -37,85 +53,125 @@ export default function GenreDumbbell({ data }) {
   }, [data, mode, query]);
 
   const W = Math.max(300, width || 620);
-  const labelW = W < 460 ? 92 : 126;
-  const x = useMemo(() => scaleLinear([0, 1], [labelW + 10, W - 58]), [W, labelW]);
-  // the average genre before 2000 and since 2010 (all genres, whatever is filtered)
-  const avg = useMemo(() => {
-    if (!data) return null;
-    const n = data.genres.length;
-    return { pre: data.genres.reduce((s, g) => s + g.pre, 0) / n, post: data.genres.reduce((s, g) => s + g.post, 0) / n };
-  }, [data]);
+  const narrow = W < 520;
+  const labelW = narrow ? 92 : 126;
+  const deltaW = narrow ? 50 : 118; // right-hand "Change in valence" column
+  const x = useMemo(() => scaleLinear([0, 1], [labelW + 12, W - deltaW - 10]), [W, labelW, deltaW]);
 
   if (!data) return <div className="chart-loading">Loading genres&hellip;</div>;
 
-  const rowsH = rows.length * ROW;
-  // a label sits beside its mark and runs outward, away from the other label, so the two never collide
-  const pairLabels = (a, b, y, la, lb, cls) => {
-    const aLeft = a <= b;
-    return (
-      <>
-        <text className={cls} x={x(a) + (aLeft ? 6 : -6)} y={y} textAnchor={aLeft ? 'end' : 'start'}>{la}</text>
-        <text className={cls} x={x(b) + (aLeft ? -6 : 6)} y={y} textAnchor={aLeft ? 'start' : 'end'}>{lb}</text>
-      </>
-    );
+  const n = data.nGenres;
+  const nLower = data.genres.filter((g) => g.delta < 0).length;
+  const nHigher = data.genres.filter((g) => g.delta > 0).length;
+  const biggestDrop = data.genres[0];
+  const biggestRise = data.genres[data.genres.length - 1];
+
+  // how many genres this view shows, in words
+  const q = query.trim();
+  let showing;
+  if (q) showing = rows.length ? <>Showing <b>{rows.length}</b> of {n} genres matching &ldquo;{q}&rdquo;.</> : <>No genre matches &ldquo;{q}&rdquo;.</>;
+  else if (mode === 'drops') showing = <>Showing the <b>{rows.length}</b> largest decreases, of {n} genres.</>;
+  else if (mode === 'rises') showing = <>Showing all <b>{rows.length}</b> genres whose average valence rose. The largest rise is {signedChange(biggestRise.delta)}; the largest drop is {signedChange(biggestDrop.delta)}.</>;
+  else showing = <>Showing all <b>{rows.length}</b> genres, largest decrease first.</>;
+
+  const tipContent = (g) => (
+    <>
+      <b>{prettyGenre(g.genre)}</b>
+      <div>Before 2000: <strong>{g.pre.toFixed(2)}</strong>{g.nPre != null && <> &middot; {g.nPre.toLocaleString()} tracks</>}</div>
+      <div>Since 2010: <strong>{g.post.toFixed(2)}</strong>{g.nPost != null && <> &middot; {g.nPost.toLocaleString()} tracks</>}</div>
+      <div className="tooltip__sub">Change in valence: {signedChange(g.delta, 3)} ({g.delta < 0 ? 'lower' : 'higher'})</div>
+    </>
+  );
+  // place the tooltip at the middle of a row's arrow (used for keyboard focus and taps)
+  const showAt = (el, g) => {
+    const r = el.getBoundingClientRect();
+    // beside the arrow if the tooltip (max 260px) fits there, otherwise from the chart's left edge
+    let px = (x(g.pre) + x(g.post)) / 2;
+    const fits = px > W * 0.55 ? px > 280 : W - px > 280;
+    if (!fits) px = 2;
+    show({ clientX: r.left + px, clientY: r.top + ROW / 2 }, tipContent(g));
+    setPinned(g.genre);
   };
-  const first = rows[0];
+  const clearTip = () => { hide(); setPinned(null); };
+  const onRowKey = (e, i) => {
+    const next = e.key === 'ArrowDown' ? i + 1 : e.key === 'ArrowUp' ? i - 1 : e.key === 'Home' ? 0 : e.key === 'End' ? rows.length - 1 : null;
+    if (e.key === 'Escape') { clearTip(); return; }
+    if (next == null || next < 0 || next >= rows.length) return;
+    e.preventDefault();
+    setFocusIdx(next);
+    rowRefs.current[next]?.focus();
+  };
+  const tabStop = Math.min(focusIdx, Math.max(0, rows.length - 1));
+
+  // axis: endpoint words at the two ends; tick numbers only where they do not collide with them
+  const plotW = x(1) - x(0);
+  const endW = 104; // approx. width of "0 · Less positive"
+  const stacked = plotW < 2 * endW + 24; // phones: put the two end labels on separate lines
+  const ticks = [0.25, 0.5, 0.75].filter((t) => !stacked && t * plotW > endW + 18 && (1 - t) * plotW > endW + 18);
+  const axisH = stacked ? 50 : 36;
 
   const body = (
-    <svg width={W} height={TOP + rowsH + BOTTOM} role="img"
-      aria-label={`Arrow chart of ${rows.length} genres: happiness score before 2000 versus since 2010. The average genre moved from ${avg.pre.toFixed(2)} to ${avg.post.toFixed(2)}.`}>
+    <svg width={W} height={rows.length * ROW + 6} role="img"
+      aria-label={`Arrow chart of ${rows.length} genres: average valence before 2000 (circle) and since 2010 (arrowhead). Full values are in the table below.`}>
       {[0, 0.25, 0.5, 0.75, 1].map((t) => (
-        <line key={t} x1={x(t)} x2={x(t)} y1={TOP} y2={TOP + rowsH} className="grid" />
+        <line key={t} x1={x(t)} x2={x(t)} y1="0" y2={rows.length * ROW} className="grid" />
       ))}
-      {/* reference lines: the average genre in each period */}
-      <line x1={x(avg.pre)} x2={x(avg.pre)} y1={TOP - 4} y2={TOP + rowsH + 6} className="dumb-ref" strokeDasharray="3 4" />
-      <line x1={x(avg.post)} x2={x(avg.post)} y1={TOP - 4} y2={TOP + rowsH + 6} className="dumb-ref" />
-      {/* label the first row directly instead of a legend */}
-      {first && pairLabels(first.pre, first.post, TOP - 8, 'before 2000', 'since 2010', 'dumb-direct')}
-      <g transform={`translate(0 ${TOP})`}>
       {rows.map((g, i) => {
-        const sadder = g.delta < 0;
-        const col = sadder ? C.sadder : C.happier;
-        // arrowhead at the since-2010 value, pointing the way the genre moved
-        const dir = sadder ? -1 : 1;
+        const dir = g.delta < 0 ? -1 : 1;
+        const col = g.delta < 0 ? C.sadder : C.happier;
         const tip = x(g.post);
         const y0 = ROW / 2;
-        const head = `${tip},${y0} ${tip - dir * 11},${y0 - 6} ${tip - dir * 11},${y0 + 6}`;
-        const lineEnd = Math.abs(tip - x(g.pre)) > 11 ? tip - dir * 9 : tip;
+        const lineEnd = Math.abs(tip - x(g.pre)) > 14 ? tip - dir * 12 : tip;
         return (
           <g key={g.genre} transform={`translate(0 ${i * ROW})`}>
-          <g className="dumb-row"
-            style={{ animationDelay: `${Math.min(i, 14) * 35}ms` }}
-            onMouseMove={(e) => show(e, (
-              <>
-                <b>{prettyGenre(g.genre)}</b>
-                <div>before 2000: <b>{g.pre.toFixed(2)}</b> ({g.nPre} tracks)</div>
-                <div>since 2010: <b>{g.post.toFixed(2)}</b> ({g.nPost} tracks)</div>
-                <div style={{ color: col }}>{sadder ? 'got sadder' : 'got happier'} by {Math.abs(g.delta).toFixed(2)}</div>
-              </>
-            ))}
-            onMouseLeave={hide}>
-            <rect x="0" y="0" width={W} height={ROW} fill="transparent" />
-            <text className="row-label" x={labelW} y={ROW / 2 + 4} textAnchor="end">{prettyGenre(g.genre)}</text>
-            <line className="dumb-line" x1={x(g.pre)} x2={lineEnd} y1={ROW / 2} y2={ROW / 2} stroke={col} strokeOpacity="0.75" strokeWidth="3" strokeLinecap="round"
-              style={{ transformOrigin: `${x(g.pre)}px ${ROW / 2}px`, animationDelay: `${Math.min(i, 14) * 35 + 120}ms` }} />
-            <circle cx={x(g.pre)} cy={ROW / 2} r="5.5" fill="#1f1f1f" stroke={C.start} strokeWidth="2" />
-            <polygon className="dumb-head" points={head} fill={col} stroke="#121212" strokeWidth="1" strokeLinejoin="round" />
-            <text className="row-delta" x={W - 4} y={ROW / 2 + 4} textAnchor="end" fill={col}>{signed2(g.delta)}</text>
-          </g>
+            <g className={`dumb-row ${pinned === g.genre ? 'is-pinned' : ''}`}
+              ref={(el) => (rowRefs.current[i] = el)}
+              tabIndex={i === tabStop ? 0 : -1}
+              aria-label={`${prettyGenre(g.genre)}: ${g.pre.toFixed(2)} before 2000, ${g.post.toFixed(2)} since 2010, change ${signedChange(g.delta)}`}
+              style={{ animationDelay: `${Math.min(i, 14) * 35}ms` }}
+              onMouseMove={(e) => show(e, tipContent(g))}
+              onMouseLeave={() => { if (pinned !== g.genre) hide(); }}
+              onFocus={(e) => { focusedAt.current = Date.now(); setFocusIdx(i); showAt(e.currentTarget, g); }}
+              onBlur={clearTip}
+              onClick={(e) => {
+                if (Date.now() - focusedAt.current < 400) return; // the focus from this same tap already opened it
+                if (pinned === g.genre) clearTip(); else showAt(e.currentTarget, g);
+              }}
+              onKeyDown={(e) => onRowKey(e, i)}>
+              <rect className="dumb-hit" x="0" y="1" width={W} height={ROW - 2} rx="6" fill="transparent" />
+              <text className="row-label" x={labelW} y={y0 + 4} textAnchor="end">{prettyGenre(g.genre)}</text>
+              <line className="dumb-line" x1={x(g.pre)} x2={lineEnd} y1={y0} y2={y0}
+                style={{ stroke: col, transformOrigin: `${x(g.pre)}px ${y0}px`, animationDelay: `${Math.min(i, 14) * 35 + 120}ms` }} />
+              <StartMark cx={x(g.pre)} cy={y0} />
+              <g className="dumb-head"><EndMark tip={tip} cy={y0} dir={dir} col={col} /></g>
+              <text className="row-delta" x={W - 4} y={y0 + 4} textAnchor="end" style={{ fill: col }}>{signedChange(g.delta)}</text>
+            </g>
           </g>
         );
       })}
-      </g>
     </svg>
   );
 
   return (
     <div ref={tipRef} className="chart dumbbell" style={{ position: 'relative' }}>
+      {/* overview: stays visible whatever the filter */}
+      <div className="gshift">
+        <div className="gshift__nums">
+          <span className="gshift__num"><b>{nLower}</b> <span aria-hidden="true" style={{ color: C.sadder }}>&#9660;</span> lower</span>
+          <span className="gshift__num"><b>{nHigher}</b> <span aria-hidden="true" style={{ color: C.happier }}>&#9650;</span> higher</span>
+        </div>
+        <div className="gshift__bar" role="img" aria-label={`${nLower} of ${n} genres lower, ${nHigher} higher`}>
+          <i style={{ width: `${(nLower / n) * 100}%`, background: C.sadder }} />
+          <i style={{ width: `${(nHigher / n) * 100}%`, background: C.happier }} />
+        </div>
+        <p className="gshift__cap">of {n} eligible genres: average valence since 2010 compared with before 2000.</p>
+      </div>
+
       <div className="dumbbell__controls">
         <div className="chips" role="group" aria-label="Which genres to show">
           {MODES.map((m) => (
-            <button key={m.id} className={`chip ${!query && mode === m.id ? 'is-on' : ''}`} onClick={() => { setQuery(''); setMode(m.id); }}>
+            <button key={m.id} className={`chip ${!query && mode === m.id ? 'is-on' : ''}`} aria-pressed={!query && mode === m.id}
+              onClick={() => { setQuery(''); setMode(m.id); setFocusIdx(0); clearTip(); }}>
               {m.label}
             </button>
           ))}
@@ -123,35 +179,61 @@ export default function GenreDumbbell({ data }) {
         <label className="search">
           <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M7 1.75a5.25 5.25 0 1 0 3.2 9.4l3.5 3.5 1.06-1.06-3.5-3.5A5.25 5.25 0 0 0 7 1.75zm-3.75 5.25a3.75 3.75 0 1 1 7.5 0 3.75 3.75 0 0 1-7.5 0z" /></svg>
           <span className="sr-only">Search genres</span>
-          <input className="input" type="search" placeholder="Search a genre, try dub, samba or k-pop" value={query} onChange={(e) => setQuery(e.target.value)} />
+          <input className="input" type="search" placeholder="Search a genre, try dub, samba or k-pop" value={query}
+            onChange={(e) => { setQuery(e.target.value); setFocusIdx(0); clearTip(); }} />
         </label>
       </div>
-      {!query && mode === 'rises' && rows.length > 0 && (
-        // subtitle for the exceptions: they exist, but they barely moved (all numbers from the data)
-        <p className="dumbbell__sub">
-          <b>Got happier, but only marginally.</b> The biggest gain among these {rows.length} genres is {signed2(rows[0].delta)},
-          while the biggest drop is {signed2(data.genres[0].delta)}.
-        </p>
-      )}
-      <p className="dumbbell__def"><b>Happiness score:</b> Spotify&rsquo;s valence measure of how cheerful a track sounds, from 0 to 1.</p>
+      <p className="dumbbell__count" aria-live="polite">{showing}</p>
+
+      {/* permanent legend: shape = period, arrow = direction, colour = valence */}
+      <div className="dumbbell__legend" aria-hidden="true">
+        <span>
+          <svg viewBox="0 0 14 14" width="14" height="14"><StartMark cx={7} cy={7} r={5} /></svg>
+          Before 2000{years && <> ({years[0]}&ndash;1999)</>}
+        </span>
+        <span>
+          <svg viewBox="0 0 40 14" width="40" height="14"><line x1="4" x2="28" y1="7" y2="7" className="dumb-line dumb-line--static" /><EndMark tip={38} cy={7} dir={1} col="#d9d9d9" size={11} /></svg>
+          Since 2010{years && <> (2010&ndash;{years[1]})</>}
+        </span>
+        <span>
+          <b style={{ color: C.sadder }}>&#9664; red</b> = lower
+        </span>
+        <span>
+          <b style={{ color: C.happier }}>green &#9654;</b> = higher
+        </span>
+      </div>
+
       <div ref={wrap} className="dumbbell__axis">
-        <svg width={W} height="22" aria-hidden="true">
-          {(W < 520 ? [0.5] : [0.25, 0.5, 0.75]).map((t) => (
-            <text key={t} className="axis-text" x={x(t)} y="14" textAnchor="middle">{t}</text>
+        <svg width={W} height={axisH} aria-hidden="true">
+          <text className="axis-title" x={(x(0) + x(1)) / 2} y="13" textAnchor="middle">Average valence</text>
+          {ticks.map((t) => (
+            <text key={t} className="axis-text" x={x(t)} y="30" textAnchor="middle">{t}</text>
           ))}
-          <text className="axis-text axis-text--cue" x={x(0) - 3} y="14" textAnchor="start">0 sad</text>
-          <text className="axis-text axis-text--cue" x={x(1) + 3} y="14" textAnchor="end">1 happy</text>
-          <text className="axis-text" x={W - 4} y="14" textAnchor="end">change</text>
+          <text className="axis-text axis-text--cue" x={x(0)} y="30" textAnchor="start">0 &middot; Less positive</text>
+          <text className="axis-text axis-text--cue" x={x(1)} y={stacked ? 45 : 30} textAnchor="end">1 &middot; More positive</text>
+          {narrow ? (
+            <>
+              <text className="axis-title axis-title--sm" x={W - 2} y="13" textAnchor="end">Change</text>
+              <text className="axis-title axis-title--sm" x={W - 2} y="27" textAnchor="end">in valence</text>
+            </>
+          ) : <text className="axis-title" x={W - 4} y="13" textAnchor="end">Change in valence</text>}
         </svg>
       </div>
-      <div className={`dumbbell__body ${rows.length > 12 ? 'is-scroll' : ''}`}>
-        {rows.length ? body : <p className="hint" style={{ padding: 16 }}>No genre matches &ldquo;{query}&rdquo;.</p>}
+      <div className={`dumbbell__body ${rows.length > 12 ? 'is-scroll' : ''}`} onScroll={clearTip}>
+        {rows.length ? body : <p className="hint" style={{ padding: 16 }}>No genre matches &ldquo;{q}&rdquo;.</p>}
       </div>
-      <p className="dumbbell__ref">
-        <svg viewBox="0 0 28 12" aria-hidden="true"><line x1="2" x2="2" y1="0" y2="12" className="dumb-ref" strokeDasharray="3 3" /><line x1="16" x2="16" y1="0" y2="12" className="dumb-ref" /></svg>
-        The average genre: <b>{avg.pre.toFixed(2)}</b> before 2000 (dashed line) &rarr; <b>{avg.post.toFixed(2)}</b> since 2010 (solid line).
-      </p>
-      <p className="hint">Each dot is a genre&rsquo;s average across its tracks. Only genres with at least {data.minTracks} tracks in both periods.</p>
+      <p className="hint">Hover, tap or tab to a row for both averages, the change and track counts. Arrow keys move between rows.</p>
+
+      {/* the same numbers as a table, for screen readers */}
+      <div className="sr-only"><table>
+        <caption>Average valence by genre, before 2000 and since 2010</caption>
+        <thead><tr><th scope="col">Genre</th><th scope="col">Before 2000</th><th scope="col">Since 2010</th><th scope="col">Change</th><th scope="col">Tracks before / since</th></tr></thead>
+        <tbody>
+          {rows.map((g) => (
+            <tr key={g.genre}><th scope="row">{prettyGenre(g.genre)}</th><td>{g.pre.toFixed(2)}</td><td>{g.post.toFixed(2)}</td><td>{signedChange(g.delta)}</td><td>{g.nPre} / {g.nPost}</td></tr>
+          ))}
+        </tbody>
+      </table></div>
       <Tooltip tip={tip} />
     </div>
   );

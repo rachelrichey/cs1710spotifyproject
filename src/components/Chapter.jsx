@@ -11,9 +11,9 @@ export function Reveal({ children, className = '', delay = 0 }) {
 }
 
 /** Standard chapter wrapper: anchor id, numbered kicker, big title, optional dek. */
-export default function Chapter({ chapter, tint = 'a', dek, children }) {
+export default function Chapter({ chapter, tint = 'a', dek, compact = false, children }) {
   return (
-    <section id={chapter.id} className={`chapter chapter--tint-${tint}`} aria-labelledby={`${chapter.id}-title`}>
+    <section id={chapter.id} className={`chapter chapter--tint-${tint} ${compact ? 'chapter--compact' : ''}`} aria-labelledby={`${chapter.id}-title`}>
       <div className="chapter__inner">
         <Reveal className="chapter__head">
           <div className="chapter__num">

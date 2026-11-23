@@ -166,6 +166,11 @@ button { font: inherit; color: inherit; }
 .chapter__num { display: inline-flex; align-items: center; gap: 10px; font-weight: 700; font-size: 14px; color: var(--text-2); margin-bottom: 14px; }
 .chapter__num b { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--green); color: #000; font-size: 13px; }
 .chapter h2 { font-size: clamp(36px, 6vw, 72px); }
+/* smaller heading and spacing, so more of the chart fits on screen */
+.chapter--compact { padding-top: clamp(56px, 8vh, 96px); }
+.chapter--compact h2 { font-size: clamp(28px, 3.6vw, 46px); line-height: 1.08; }
+.chapter--compact .chapter__dek { font-size: clamp(16px, 1.4vw, 19px); margin-top: 12px; max-width: 70ch; }
+.chapter--compact .chapter__head { margin-bottom: clamp(20px, 3vh, 32px); }
 .chapter__dek { margin-top: 18px; color: var(--text-2); font-size: clamp(18px, 1.8vw, 22px); line-height: 1.4; max-width: 56ch; }
 .caveat { font-size: 13px; color: var(--text-3); margin-top: 14px; max-width: 70ch; }
 .caveat b { color: var(--text-2); }
