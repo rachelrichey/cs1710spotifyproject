@@ -1,5 +1,3 @@
-import { moodColor } from '../lib/format.js';
-
 /*
  * Chapter 2 key (Milestone 10 think-aloud fix): both testers asked how a song's
  * happiness, energy and danceability are measured. The answer used to live only
@@ -17,7 +15,6 @@ const MEASURES = [
     points: ['Key', 'Harmony', 'Brightness'],
     note: 'It does not read the lyrics.',
     accent: 'var(--gold)',
-    color: (v) => moodColor(v),
   },
   {
     key: 'energy',
@@ -27,7 +24,6 @@ const MEASURES = [
     from: 'Built from:',
     points: ['Loudness', 'Dynamic range', 'Timbre', 'How often new sounds start', 'Overall noisiness'],
     accent: 'var(--purple)',
-    color: () => 'var(--purple)',
   },
   {
     key: 'danceability',
@@ -37,7 +33,6 @@ const MEASURES = [
     from: 'Built from:',
     points: ['Tempo', 'How steady the rhythm is', 'How strong the beat is', 'How regular the song is overall'],
     accent: 'var(--green)',
-    color: () => 'var(--green)',
   },
 ];
 
@@ -49,7 +44,7 @@ function Scale({ m, a, b }) {
       <div className="mkey__track">
         {[a, b].map((s, i) => (
           // labels near either end hang inward so they never spill past the scale
-          <span key={s.name} className={`mkey__pin ${i ? 'is-low' : ''} ${s[m.key] > 0.7 ? 'is-right' : s[m.key] < 0.3 ? 'is-left' : ''}`} style={{ left: pos(s[m.key]), '--c': m.color(s[m.key]) }}>
+          <span key={s.name} className={`mkey__pin ${i ? 'is-low' : ''} ${s[m.key] > 0.7 ? 'is-right' : s[m.key] < 0.3 ? 'is-left' : ''}`} style={{ left: pos(s[m.key]), '--c': s.color }}>
             <i />
             <em>{s.short} <b>{s[m.key].toFixed(2)}</b></em>
           </span>
@@ -60,10 +55,11 @@ function Scale({ m, a, b }) {
   );
 }
 
+// Each song keeps one dot colour on every scale: then = gold, now = purple.
 export default function MeasureKey({ hook }) {
   if (!hook) return null;
-  const a = { ...hook.then, short: `${hook.then.name} (${hook.then.year})` };
-  const b = { ...hook.now, short: `${hook.now.name.split(' (')[0]} (${hook.now.year})` };
+  const a = { ...hook.then, short: `${hook.then.name} (${hook.then.year})`, color: 'var(--gold)' };
+  const b = { ...hook.now, short: `${hook.now.name.split(' (')[0]} (${hook.now.year})`, color: 'var(--purple)' };
   return (
     <section className="mkey card" aria-labelledby="mkey-title">
       <h3 id="mkey-title">How a song gets its scores</h3>
