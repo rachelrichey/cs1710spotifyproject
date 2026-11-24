@@ -203,8 +203,8 @@ button { font: inherit; color: inherit; }
 }
 @media (min-width: 981px) {
   .scrolly--big .step-card { padding: 28px 30px; }
-  .scrolly--big .step-card h3 { font-size: clamp(28px, 2.6vw, 36px); margin-bottom: 14px; }
-  .scrolly--big .step-card p { font-size: clamp(18px, 1.5vw, 21px); line-height: 1.6; }
+  .scrolly--big .step-card h3 { font-size: clamp(22px, 2vw, 28px); margin-bottom: 14px; }
+  .scrolly--big .step-card p { font-size: clamp(15px, 1.15vw, 17px); line-height: 1.6; }
 } /* full-height cell, so the sticky chart has room to stay pinned */
 .scrolly__sticky { position: sticky; top: calc(var(--nav-h) + 16px); height: calc(100vh - var(--nav-h) - var(--player-h) - 32px); display: flex; align-items: center; }
 .scrolly__sticky > * { width: 100%; }
