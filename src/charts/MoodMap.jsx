@@ -62,7 +62,7 @@ export default function MoodMap({ genres, profile, step = 1, big: wantBig = fals
   // big: the chapter 2 version, sized to fill the screen; only when there is room for it (not on phones)
   const big = wantBig && W >= 600;
   const M = big ? M_BIG : M_STD;
-  const fs = big ? 19 : 13;
+  const fs = big ? 15 : 13;
   const r0 = big ? 7 : 5.5;
   const r1 = big ? 10 : 8;
   const { ref: tipRef, tip, show, hide } = useTooltip();
