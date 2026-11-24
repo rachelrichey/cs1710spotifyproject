@@ -62,7 +62,7 @@ export default function MoodMap({ genres, profile, step = 1, big: wantBig = fals
   // big: the chapter 2 version, sized to fill the screen; only when there is room for it (not on phones)
   const big = wantBig && W >= 600;
   const M = big ? M_BIG : M_STD;
-  const fs = big ? 15 : 13;
+  const fs = big ? 12 : 13;
   const r0 = big ? 7 : 5.5;
   const r1 = big ? 10 : 8;
   const { ref: tipRef, tip, show, hide } = useTooltip();
@@ -165,7 +165,7 @@ export default function MoodMap({ genres, profile, step = 1, big: wantBig = fals
                   r={focus ? r1 : hover === g.genre ? r1 : r0}
                   fill={moodColor(g.valence)}
                   stroke={focus ? (calm.has(g.genre) ? COLORS.calm : COLORS.intense) : hover === g.genre ? '#fff' : 'none'}
-                  strokeWidth="2.5"
+                  strokeWidth="1.5"
                   style={{ opacity: op, transition: `opacity .6s ease ${step === 1 ? i * 6 : 0}ms, r .2s` }}
                 />
                 {hover === g.genre && !labelled[g.genre] && (
