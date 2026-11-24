@@ -24,7 +24,7 @@
 .chart--big .axis text { font-size: 14px; }
 .chart--big .axis-title { font-size: 16px; }
 .chart--big .mood-names text { font-size: 18px; }
-.chart--big .dot-label { font-size: 15px; }
+.chart--big .dot-label { font-size: 12px; }
 .chart--big .callout { font-size: 17px; }
 .chart--big .tooltip { font-size: 16px; padding: 12px 16px; max-width: 340px; }
 .chart--big .tooltip b { font-size: 19px; }
