@@ -43,6 +43,17 @@ You only need Python to *rebuild* the data (see below).
 
 Chapter text and scroll steps live in `src/sections/StorySections.jsx`. Every number in the text is computed from the data, never typed in.
 
+## Changes from feedback
+
+**Chapter 6 radar: relative scale (Milestone 8).** Feedback said the decade-to-decade differences were too subtle on the absolute 0–1 scale. Speechiness was the worst case: every decade sat near the centre.
+
+- **Relative to max (default):** each axis is divided by its highest decade, so that decade sits at 100% and the others show their share of it. For example, a decade with half the peak speechiness lands at 50%. Axes still start at 0, not at the lowest decade, which avoids the exaggeration flagged in Milestone 6.
+- **Absolute 0–1:** a toggle under the decade chips switches back to the raw scores, so readers can see the true size of the change.
+- **Scale note:** a note under the chart says the shifts are real but modest. It names the biggest 1960s to 2020–22 change on any axis, computed from the data.
+- **Readouts:** in relative mode, hovering an axis shows the raw score, its percentage, and what 100% equals. Ring labels read 25%–100%, and the change labels are in percentage points.
+
+Code: `src/charts/HitRadar.jsx` (scaling, toggle) and `MainChapter` in `src/sections/StorySections.jsx` (the note).
+
 ## Libraries
 
 **Website** (versions in `package.json`)
