@@ -9,7 +9,7 @@ import MeasureKey from '../charts/MeasureKey.jsx';
 import SadShareLine from '../charts/SadShareLine.jsx';
 import GenreDumbbell from '../charts/GenreDumbbell.jsx';
 import MoodTimeMap, { buildFrames } from '../charts/MoodTimeMap.jsx';
-import HitRadar from '../charts/HitRadar.jsx';
+import HitRadar, { AXES as RADAR_AXES } from '../charts/HitRadar.jsx';
 import TakeawayCards from '../charts/TakeawayCards.jsx';
 import SongFinder from '../charts/SongFinder.jsx';
 import GenreBurst from '../charts/GenreBurst.jsx';
@@ -225,11 +225,22 @@ export function MainChapter({ profile }) {
         </>,
       ]
     : [<p key="l">Loading&hellip;</p>];
+  // Largest raw 1960s -> 2020-22 change on any radar axis, for the "how big is this?" note.
+  const biggest = a && b
+    ? RADAR_AXES.map((ax) => ({ ...ax, d: b[ax.key] - a[ax.key] })).sort((x, y) => Math.abs(y.d) - Math.abs(x.d))[0]
+    : null;
   return (
     <Chapter chapter={chapter('main')} tint="c" dek="Put the average hit of two eras side by side and the shift is hard to miss.">
       <Scrolly steps={steps} side="left" onStep={onStep}>
         {() => <HitRadar profile={profile} selected={selected} onToggle={toggle} />}
       </Scrolly>
+      {biggest && (
+        <p className="caveat">
+          <b>A note on scale:</b> these shifts are real but modest. The biggest change between the 1960s and 2020&ndash;22 on any axis
+          is {biggest.label.toLowerCase()}, at {signed2(biggest.d)} on a 0&ndash;1 scale. The chart stretches each axis to its own
+          highest decade so the differences are visible. Switch to &ldquo;Absolute 0&ndash;1&rdquo; to see them at true size.
+        </p>
+      )}
     </Chapter>
   );
 }

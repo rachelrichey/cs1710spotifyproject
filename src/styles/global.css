@@ -225,6 +225,7 @@ button { font: inherit; color: inherit; }
 .card { background: var(--bg-card); border-radius: var(--radius); padding: 20px; transition: background .2s; }
 .card:hover { background: var(--bg-hover); }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.radar__scale { margin-top: 8px; }
 .chip {
   display: inline-flex; align-items: center; gap: 8px; border: 1px solid #3a3a3a; background: transparent; color: var(--text);
   padding: 6px 14px; border-radius: 999px; font-weight: 600; font-size: 14px; cursor: pointer; transition: background .15s, border-color .15s, color .15s;
