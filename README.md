@@ -7,6 +7,8 @@
 Built from 114,000 Spotify tracks (114 genres) with release dates (web-scraped from Wikipedia, MusicBrainz and Deezer) and artist gender (mostly Wikidata) added by our team.
 Team: Bahar Moradi, Cate Buchan, Rachel Richey, Miles Schwab.
 
+**Live site:** https://rachelrichey.github.io/cs1710spotifyproject/
+
 ![hero](docs/screenshots/01-hero.jpg)
 
 ## Run it
@@ -40,6 +42,28 @@ You only need Python to *rebuild* the data (see below).
 | 10 | Behind the data | Method | `sections/DataSection.jsx` |
 
 Chapter text and scroll steps live in `src/sections/StorySections.jsx`. Every number in the text is computed from the data, never typed in.
+
+## Libraries
+
+**Website** (versions in `package.json`)
+
+| Library | What we use it for |
+|---|---|
+| [React 18](https://react.dev) (`react`, `react-dom`) | Components, state, scroll-driven chapters |
+| [D3](https://d3js.org) modules: `d3-scale`, `d3-shape`, `d3-delaunay`, `d3-format`, `d3-interpolate` | Scales, lines and areas, nearest-point hover, number formatting, colour ramps. React renders the SVG; D3 does the maths. |
+| [Figtree](https://fontsource.org/fonts/figtree) (`@fontsource-variable/figtree`) | The site's typeface, bundled so it works offline |
+| [Vite 5](https://vitejs.dev) + `@vitejs/plugin-react` | Dev server and production build |
+| [Vitest](https://vitest.dev) + `jsdom` | Tests (`npm test`) |
+
+**Data pipeline** (versions in `pipeline/requirements.txt`)
+
+| Library | What we use it for |
+|---|---|
+| Python 3 | Runs the two pipeline scripts |
+| [pandas](https://pandas.pydata.org) | Cleaning, filtering and aggregating the tracks |
+| [NumPy](https://numpy.org) | Numeric helpers used by the aggregation |
+
+No other services or APIs are needed at runtime: the site is static files plus the JSON in `public/data/`.
 
 ## Data pipeline
 
@@ -87,7 +111,7 @@ docs/                pipeline notes, contributing guide, process-book notes, scr
 ## Deploy
 
 **GitHub Pages (automatic):** push to `main`, then in the repo go to *Settings > Pages* and set *Source* to **GitHub Actions**.
-The workflow in `.github/workflows/deploy.yml` tests, builds and publishes. (We have not run this workflow yet. If it fails, open the Actions tab and read the log.)
+The workflow in `.github/workflows/deploy.yml` (Node 20) runs `npm test`, builds and publishes, usually in under a minute. If a deploy fails, open the repo's Actions tab and read the log; the live site keeps the last good version.
 
 **Anywhere else:** `npm run build`, then upload the `dist/` folder to Netlify Drop, Vercel, or any static host. Paths are relative, so it works from a sub-folder too.
 
